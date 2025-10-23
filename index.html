@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MT Shopping Store | Your Daily Essentials</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&family=Noto+Kufi+Arabic:wght@300;500;700;900&display=swap');
+        body {
+            /* Default to Inter, use Noto Kufi Arabic for Arabic content */
+            font-family: 'Inter', 'Noto Kufi Arabic', sans-serif;
+            background-color: #f8f8f8;
+        }
+        .cart-count-bubble {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background-color: #ef4444; /* Red 500 */
+            color: white;
+            border-radius: 9999px;
+            padding: 1px 6px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            line-height: 1;
+        }
+        /* RTL adjustments for the cart count bubble */
+        html[dir='rtl'] .cart-count-bubble {
+            right: auto;
+            left: -10px;
+        }
+        
+        /* Custom scrollbar style for aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #9ca3af; /* Gray 400 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e5e7eb; /* Gray 200 */
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'mt-primary': '#4f46e5', /* Indigo 600 */
+                        'mt-accent': '#f59e0b',  /* Amber 500 */
+                        'mt-green': '#10b981', /* Emerald 500 */
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="text-gray-800">
+
+    <!-- Header & Navigation -->
+    <header id="main-header" class="sticky top-0 bg-white shadow-lg z-50">
+        <!-- Top Bar with Logo, Search, and Icons -->
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+            
+            <!-- Logo -->
+            <a href="#" onclick="renderPage('home')" class="text-3xl font-extrabold text-mt-primary tracking-tight" id="logo-link">
+                MT<span class="text-mt-accent">SHOP</span>
+            </a>
+
+            <!-- Search Bar (Visible on Desktop/Tablet) -->
+            <div class="hidden md:flex flex-grow max-w-lg mx-8">
+                <input type="search" data-translate="search_placeholder" placeholder="Search for products, categories..." class="w-full px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-mt-primary focus:border-mt-primary transition duration-150" />
+                <button class="bg-mt-primary text-white p-2 rounded-r-lg hover:bg-indigo-700 transition duration-150">
+                    <!-- Search Icon (Magnifying Glass) -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Icons/Actions -->
+            <div class="flex items-center space-x-4">
+                
+                <!-- Language Switcher -->
+                <div class="relative group">
+                    <button class="text-gray-600 hover:text-mt-primary transition duration-150 p-2 rounded-full hover:bg-gray-100 flex items-center" title="Language">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 0110 17.07C7.67 17.485 7 17.5 7 17.5c0 .324.475.65.75 1.056C7.817 19.117 8.01 19.5 8 19.5s-.183.383-.317.594C7.475 20.45 7 20.776 7 21s.75-.406 1.133-1.018A12.025 12.025 0 0012 21c2.474 0 4.774-.636 6.57-1.789.383.612 1.133 1.018 1.133 1.018s-.475-.324-.75-1.056c-.053-.085-.107-.17-.161-.255M21 5h-4m2 0V3m0 2v2M5 21a2 2 0 002-2v-4a2 2 0 012-2h4a2 2 0 012 2v4a2 2 0 002 2H5z"/></svg>
+                        <span class="ml-1 text-sm font-medium uppercase" id="current-lang-display">EN</span>
+                    </button>
+                    <!-- Dropdown Content -->
+                    <div class="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition duration-150 transform scale-95 group-hover:scale-100 origin-top-right z-10">
+                        <button onclick="switchLanguage('en')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-t-lg">English</button>
+                        <button onclick="switchLanguage('ar')" class="block w-full text-right px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-b-lg font-bold">العربية</button>
+                    </div>
+                </div>
+
+                <!-- Admin Button -->
+                <button id="admin-button" onclick="renderPage('admin-login')" class="text-gray-600 hover:text-mt-green transition duration-150 p-2 rounded-full hover:bg-gray-100 hidden sm:block" title="Admin Panel">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.82 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.82 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.82-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.82-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </button>
+
+                <!-- Cart Icon -->
+                <div class="relative">
+                    <button id="cart-button" onclick="renderPage('cart')" class="text-gray-600 hover:text-mt-primary transition duration-150 p-2 rounded-full hover:bg-gray-100" title="Shopping Cart">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </button>
+                    <span id="cart-count" class="cart-count-bubble">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Primary Navigation Bar -->
+        <nav class="bg-gray-100 border-t border-gray-200 shadow-inner">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex space-x-6 h-12" id="primary-nav-links">
+                    <a href="#" onclick="renderPage('home')" id="nav-home-link" class="flex items-center px-2 text-sm font-medium text-gray-700 hover:text-mt-primary transition duration-150 border-b-2 border-transparent hover:border-mt-primary">Home</a>
+                    <a href="#products" onclick="renderPage('home')" id="nav-products-link" class="flex items-center px-2 text-sm font-medium text-gray-700 hover:text-mt-primary transition duration-150 border-b-2 border-transparent hover:border-mt-primary">Products</a>
+                    <!-- Non-functional placeholders using showNotification -->
+                    <a href="#" onclick="showNotification(T('nav_about') + ' ' + T('notification_checkout'), 'bg-gray-500')" id="nav-about-link" class="flex items-center px-2 text-sm font-medium text-gray-700 hover:text-mt-primary transition duration-150 border-b-2 border-transparent hover:border-mt-primary">About Us</a>
+                    <a href="#" onclick="showNotification(T('nav_contact') + ' ' + T('notification_checkout'), 'bg-gray-500')" id="nav-contact-link" class="flex items-center px-2 text-sm font-medium text-gray-700 hover:text-mt-primary transition duration-150 border-b-2 border-transparent hover:border-mt-primary">Contact Us</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Mobile Search (Visible on Mobile) -->
+        <div class="md:hidden px-4 pb-3">
+             <input type="search" data-translate="search_placeholder" placeholder="Search products..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mt-primary focus:border-mt-primary transition duration-150" />
+        </div>
+    </header>
+
+    <!-- Main Content Area (Dynamic) -->
+    <main id="app-content" class="container mx-auto px-4 sm:px-6 lg:px-8 py-10 min-h-[70vh]">
+        <!-- Content will be rendered here by JavaScript -->
+        <div id="loading-spinner" class="flex justify-center items-center h-[50vh] text-mt-primary">
+            <svg class="animate-spin -ml-1 mr-3 h-10 w-10 text-mt-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-lg font-semibold" id="loading-text">Initializing store...</span>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer id="main-footer" class="bg-gray-900 text-white mt-12">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h5 class="text-lg font-semibold mb-4 text-mt-accent" id="footer-about-title">MT SHOP</h5>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li><a href="#" onclick="showNotification(T('nav_about') + ' ' + T('notification_checkout'), 'bg-gray-500')" class="hover:text-mt-primary transition duration-150" id="footer-about-us">About Us</a></li>
+                        <li><a href="#" class="hover:text-mt-primary transition duration-150" id="footer-careers">Careers</a></li>
+                        <li><a href="#" class="hover:text-mt-primary transition duration-150" id="footer-blog">Blog</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold mb-4 text-mt-accent" id="footer-support-title">Support</h5>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li><a href="#" onclick="showNotification(T('nav_contact') + ' ' + T('notification_checkout'), 'bg-gray-500')" class="hover:text-mt-primary transition duration-150" id="footer-contact-us">Contact Us</a></li>
+                        <li><a href="#" class="hover:text-mt-primary transition duration-150" id="footer-shipping">Shipping & Returns</a></li>
+                        <li><a href="#" class="hover:text-mt-primary transition duration-150" id="footer-faq">FAQ</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold mb-4 text-mt-accent" id="footer-legal-title">Legal</h5>
+                    <ul class="space-y-2 text-sm text-gray-300">
+                        <li><a href="#" class="hover:text-mt-primary transition duration-150" id="footer-terms">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-mt-primary transition duration-150" id="footer-privacy">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="col-span-2 md:col-span-1">
+                    <h5 class="text-lg font-semibold mb-4 text-mt-accent" id="footer-connected-title">Stay Connected</h5>
+                    <p class="text-sm text-gray-400" id="footer-subscribe-text">Subscribe for exclusive deals.</p>
+                    <div class="mt-3 flex">
+                        <input type="email" placeholder="Your email" class="p-2 w-full rounded-l-md text-gray-900 focus:outline-none" id="footer-email-placeholder" />
+                        <button class="bg-mt-primary text-white p-2 rounded-r-md hover:bg-indigo-700 transition duration-150" id="footer-join-btn">Join</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pt-6 border-t border-gray-700 text-center text-sm text-gray-500" id="footer-copyright">
+                &copy; 2025 MT SHOPPING STORE. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Notification and Modal Containers -->
+    <div id="notification-container" class="fixed bottom-5 right-5 z-[60]"></div>
+    <div id="modal-container" class="fixed inset-0 z-[70] hidden bg-gray-900 bg-opacity-75 flex items-center justify-center p-4"></div>
+
+
+    <!-- JavaScript Section (Firebase & App Logic) -->
+    <script type="module">
+        // --- Global Environment Variables ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        const ADMIN_PIN = '12345'; // Mock Admin PIN for demo
+
+        // --- Global State ---
+        let app, db, auth;
+        let userId = null; // null until authenticated
+        let isAuthReady = false;
+        let currentProducts = []; // Stores products fetched from Firestore
+        let cartItems = []; // Stores items added to the cart
+        let adminLoggedIn = false;
+        let currentPage = 'home';
+        let adminPage = 'summary'; // State for admin panel sidebar
+        let editingProduct = null; // Product object being edited in admin view
+        
+        let unsubscribeProducts = null;
+        let unsubscribeCart = null;
+        let currentLanguage = localStorage.getItem('mtshop_language') || 'en';
+
+        // --- DOM Elements ---
+        const appContentEl = document.getElementById('app-content');
+        const cartCountEl = document.getElementById('cart-count');
+        const notificationContainerEl = document.getElementById('notification-container');
+        const modalContainerEl = document.getElementById('modal-container');
+        const mainHeaderEl = document.getElementById('main-header');
+        const mainFooterEl = document.getElementById('main-footer');
+        const currentLangDisplayEl = document.getElementById('current-lang-display');
+        const loadingSpinnerEl = document.getElementById('loading-spinner');
+
+
+        // --- Firebase Imports ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            signInAnonymously, 
+            signInWithCustomToken, 
+            onAuthStateChanged,
+            setPersistence,
+            inMemoryPersistence
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            setDoc,
+            addDoc, 
+            updateDoc, 
+            deleteDoc, 
+            onSnapshot, 
+            collection, 
+            query, 
+            setLogLevel,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Set log level for debugging
+        setLogLevel('debug');
+
+
+        // --- LOCALIZATION & TRANSLATION ---
+
+        const translations = {
+            'en': {
+                'app_title': 'MT Shopping Store | Your Daily Essentials',
+                'search_placeholder': 'Search for products, categories...',
+                'admin_panel': 'Admin Panel',
+                'shopping_cart': 'Shopping Cart',
+                'logo_title': 'MT SHOP',
+                'join': 'Join',
+                'footer_title_about': 'MT SHOP',
+                'footer_about_us': 'About Us',
+                'footer_careers': 'Careers',
+                'footer_blog': 'Blog',
+                'footer_support': 'Support',
+                'footer_contact_us': 'Contact Us',
+                'footer_shipping': 'Shipping & Returns',
+                'footer_faq': 'FAQ',
+                'footer_legal': 'Legal',
+                'footer_terms': 'Terms of Service',
+                'footer_privacy': 'Privacy Policy',
+                'footer_connected': 'Stay Connected',
+                'footer_subscribe_text': 'Subscribe for exclusive deals.',
+                'footer_email_placeholder': 'Your email',
+                'footer_copyright': '2025 MT SHOPPING STORE. All rights reserved.',
+                'nav_home': 'Home',
+                'nav_products': 'Products',
+                'nav_about': 'About Us',
+                'nav_contact': 'Contact Us',
+                'hero_title': 'Spring Sale is Here!',
+                'hero_subtitle': 'Up to 50% off on premium essentials. Shop now and save big!',
+                'hero_explore': 'Explore Collections',
+                'products_heading': 'All Products',
+                'add_to_cart': 'Add to Cart',
+                'product_default_desc': 'A high-quality product.',
+                'cart_heading': 'Your Shopping Cart',
+                'cart_empty': 'Your cart is empty. Start shopping now!',
+                'cart_qty': 'Qty',
+                'cart_total': 'Total:',
+                'cart_checkout': 'Proceed to Checkout',
+                'notification_checkout': 'functionality not implemented yet.',
+                'remove_item_title': 'Remove Item',
+                'remove_item_msg': 'Are you sure you want to remove this item from your cart?',
+                'confirm': 'Confirm',
+                'cancel': 'Cancel',
+                'admin_login_title': 'Admin Login',
+                'admin_login_desc': 'Enter the secret Admin PIN to access the dashboard.',
+                'admin_pin_placeholder': 'Admin PIN',
+                'admin_login_btn': 'Login',
+                'admin_back_to_store': 'Back to Store',
+                'admin_panel_title': 'Admin Panel',
+                'admin_current_user_id': 'Current User ID:',
+                'admin_summary': 'Dashboard Summary',
+                'admin_products': 'Product Management',
+                // NEW ADMIN FEATURES
+                'admin_change_password': 'Change Admin PIN (Mock)', 
+                'admin_page_context_management': 'Page Content Management (Mock)', 
+                'admin_panel_password_title': 'Change Admin PIN',
+                'admin_panel_password_desc': 'For security, we use a static PIN. This action is a mock to show where real password change logic would go.',
+                'admin_new_pin_placeholder': 'New PIN (Action Mocked)',
+                'admin_update_pin_btn': 'Update PIN (Mocked)',
+                'admin_page_content_title': 'Edit Static Page Content (Mock)',
+                'admin_page_content_desc': 'This interface is for managing static text on pages like About Us or Contact Us.',
+                'admin_select_page': 'Select Page to Edit:',
+                'admin_page_content_textarea': 'Page Content',
+                'admin_update_content_btn': 'Update Content (Mocked)',
+                // END NEW ADMIN FEATURES
+                'admin_orders': 'Order Management',
+                'admin_logout': 'Logout',
+                'admin_view_store': 'View Store',
+                'admin_total_products': 'Total Products',
+                'admin_unique_shoppers': 'Unique Shoppers (Mock)',
+                'admin_revenue': 'Revenue (Mock)',
+                'admin_welcome': 'Welcome back, Admin! Use the sidebar to manage your store.',
+                'admin_add_new_product': 'Add New Product',
+                'admin_edit_product': 'Edit Product',
+                'admin_product_name': 'Product Name',
+                'admin_price': 'Price ($)',
+                'admin_sale_price': 'Sale Price ($) (Optional)',
+                'admin_image_url': 'Image URL (Placeholder)',
+                'admin_description': 'Description',
+                'admin_update_product': 'Update Product',
+                'admin_cancel_edit': 'Cancel Edit',
+                'admin_current_products': 'Current Products',
+                'admin_no_products': 'No products in the database.',
+                'admin_orders_heading': 'Order Management',
+                'admin_orders_note': 'Order tracking and saving functionality is not fully implemented in this version. This section serves as a structural placeholder.',
+                'shipped': 'Shipped',
+                'processing': 'Processing',
+                'cancelled': 'Cancelled',
+                'notif_wait_auth': 'Please wait for user authentication to complete.',
+                'notif_product_added': 'Product added successfully!',
+                'notif_product_updated': 'Product updated successfully!',
+                'notif_product_deleted': 'Product deleted successfully!',
+                'notif_saving_error': 'Error saving product:',
+                'notif_deleting_error': 'Error deleting product:',
+                'notif_admin_granted': 'Admin access granted!',
+                'notif_admin_invalid': 'Invalid Admin PIN.',
+                'notif_admin_logout': 'Logged out from Admin Panel.',
+                'notif_item_added': 'added to cart!',
+                'notif_cart_error': 'Error adding item to cart:',
+                'notif_product_not_found': 'Error: Product not found.',
+                'notif_item_removed': 'Item removed from cart!',
+                'notif_removing_error': 'Error removing item:',
+                'notif_id_copied': 'User ID copied to clipboard!',
+                'notif_init_failed': 'Initialization failed:',
+                'cart_item_removed': 'Removed from cart.',
+                'cart_update_error': 'Error updating cart item:',
+                'cart_clear': 'Clear Cart',
+                'cart_clear_confirm_title': 'Clear Cart',
+                'cart_clear_confirm_msg': 'Are you sure you want to remove all items from your cart?',
+                'cart_cleared_success': 'Your shopping cart has been cleared.',
+                'cart_cleared_error': 'Error clearing cart.',
+                'loading_init': 'Initializing store...',
+            },
+            'ar': {
+                'app_title': 'متجر إم تي للتسوق | أساسياتك اليومية',
+                'search_placeholder': 'البحث عن منتجات، فئات...',
+                'admin_panel': 'لوحة الإدارة',
+                'shopping_cart': 'عربة التسوق',
+                'logo_title': 'متجر إم تي',
+                'join': 'انضمام',
+                'footer_title_about': 'متجر إم تي',
+                'footer_about_us': 'من نحن',
+                'footer_careers': 'الوظائف',
+                'footer_blog': 'المدونة',
+                'footer_support': 'الدعم',
+                'footer_contact_us': 'اتصل بنا',
+                'footer_shipping': 'الشحن والإرجاع',
+                'footer_faq': 'الأسئلة الشائعة',
+                'footer_legal': 'الشؤون القانونية',
+                'footer_terms': 'شروط الخدمة',
+                'footer_privacy': 'سياسة الخصوصية',
+                'footer_connected': 'ابق على اتصال',
+                'footer_subscribe_text': 'اشترك للحصول على عروض حصرية.',
+                'footer_email_placeholder': 'بريدك الإلكتروني',
+                'footer_copyright': '2025 متجر إم تي للتسوق. جميع الحقوق محفوظة.',
+                'nav_home': 'الرئيسية',
+                'nav_products': 'المنتجات',
+                'nav_about': 'من نحن',
+                'nav_contact': 'اتصل بنا',
+                'hero_title': 'تخفيضات الربيع هنا!',
+                'hero_subtitle': 'خصم يصل إلى 50% على الأساسيات الممتازة. تسوق الآن ووفر الكثير!',
+                'hero_explore': 'استكشف المجموعات',
+                'products_heading': 'جميع المنتجات',
+                'add_to_cart': 'أضف إلى العربة',
+                'product_default_desc': 'منتج عالي الجودة.',
+                'cart_heading': 'عربة التسوق الخاصة بك',
+                'cart_empty': 'عربتك فارغة. ابدأ التسوق الآن!',
+                'cart_qty': 'الكمية',
+                'cart_total': 'الإجمالي:',
+                'cart_checkout': 'المتابعة إلى الدفع',
+                'notification_checkout': 'وظيفة الدفع لم يتم تنفيذها بعد.',
+                'remove_item_title': 'إزالة العنصر',
+                'remove_item_msg': 'هل أنت متأكد من أنك تريد إزالة هذا العنصر من عربة التسوق الخاصة بك؟',
+                'confirm': 'تأكيد',
+                'cancel': 'إلغاء',
+                'admin_login_title': 'تسجيل دخول المشرف',
+                'admin_login_desc': 'أدخل رمز PIN السري للمشرف للوصول إلى لوحة القيادة.',
+                'admin_pin_placeholder': 'رمز PIN للمشرف',
+                'admin_login_btn': 'تسجيل الدخول',
+                'admin_back_to_store': 'العودة إلى المتجر',
+                'admin_panel_title': 'لوحة الإدارة',
+                'admin_current_user_id': 'معرف المستخدم الحالي:',
+                'admin_summary': 'ملخص لوحة القيادة',
+                'admin_products': 'إدارة المنتجات',
+                // NEW ADMIN FEATURES
+                'admin_change_password': 'تغيير رمز PIN للمشرف (وهمي)', 
+                'admin_page_context_management': 'إدارة محتوى الصفحات (وهمي)', 
+                'admin_panel_password_title': 'تغيير رمز PIN للمشرف',
+                'admin_panel_password_desc': 'لأسباب أمنية، نستخدم رمز PIN ثابتًا. هذا الإجراء هو وهمي لإظهار مكان منطق تغيير كلمة المرور الحقيقي.',
+                'admin_new_pin_placeholder': 'رمز PIN الجديد (إجراء وهمي)',
+                'admin_update_pin_btn': 'تحديث رمز PIN (وهمي)',
+                'admin_page_content_title': 'تعديل محتوى الصفحة الثابت (وهمي)',
+                'admin_page_content_desc': 'هذه الواجهة مخصصة لإدارة النصوص الثابتة في صفحات مثل من نحن أو اتصل بنا.',
+                'admin_select_page': 'حدد الصفحة للتعديل:',
+                'admin_page_content_textarea': 'محتوى الصفحة',
+                'admin_update_content_btn': 'تحديث المحتوى (وهمي)',
+                // END NEW ADMIN FEATURES
+                'admin_orders': 'إدارة الطلبات',
+                'admin_logout': 'تسجيل الخروج',
+                'admin_view_store': 'عرض المتجر',
+                'admin_total_products': 'إجمالي المنتجات',
+                'admin_unique_shoppers': 'المتسوقون الفريدون (وهمي)',
+                'admin_revenue': 'الإيرادات (وهمي)',
+                'admin_welcome': 'مرحباً بعودتك أيها المشرف! استخدم الشريط الجانبي لإدارة متجرك.',
+                'admin_add_new_product': 'إضافة منتج جديد',
+                'admin_edit_product': 'تعديل المنتج',
+                'admin_product_name': 'اسم المنتج',
+                'admin_price': 'السعر ($)',
+                'admin_sale_price': 'سعر التخفيض ($) (اختياري)',
+                'admin_image_url': 'رابط الصورة (عنصر نائب)',
+                'admin_description': 'الوصف',
+                'admin_update_product': 'تحديث المنتج',
+                'admin_cancel_edit': 'إلغاء التعديل',
+                'admin_current_products': 'المنتجات الحالية',
+                'admin_no_products': 'لا توجد منتجات في قاعدة البيانات.',
+                'admin_orders_heading': 'إدارة الطلبات',
+                'admin_orders_note': 'وظيفة تتبع وحفظ الطلبات لم يتم تنفيذها بالكامل في هذا الإصدار. هذا القسم بمثابة عنصر نائب هيكلي.',
+                'shipped': 'تم الشحن',
+                'processing': 'قيد المعالجة',
+                'cancelled': 'ملغاة',
+                'notif_wait_auth': 'يرجى الانتظار حتى اكتمال مصادقة المستخدم.',
+                'notif_product_added': 'تمت إضافة المنتج بنجاح!',
+                'notif_product_updated': 'تم تحديث المنتج بنجاح!',
+                'notif_product_deleted': 'تم حذف المنتج بنجاح!',
+                'notif_saving_error': 'خطأ في حفظ المنتج:',
+                'notif_deleting_error': 'خطأ في حذف المنتج:',
+                'notif_admin_granted': 'تم منح وصول المشرف!',
+                'notif_admin_invalid': 'رمز PIN للمشرف غير صالح.',
+                'notif_admin_logout': 'تم تسجيل الخروج من لوحة الإدارة.',
+                'notif_item_added': 'أُضيف إلى العربة!',
+                'notif_cart_error': 'خطأ في إضافة العنصر إلى العربة:',
+                'notif_product_not_found': 'خطأ: المنتج غير موجود.',
+                'notif_item_removed': 'تمت إزالة العنصر من العربة!',
+                'notif_removing_error': 'خطأ في إزالة العنصر:',
+                'notif_id_copied': 'تم نسخ معرف المستخدم إلى الحافظة!',
+                'notif_init_failed': 'فشل التهيئة:',
+                'cart_item_removed': 'أُزيل من العربة.',
+                'cart_update_error': 'خطأ في تحديث عنصر العربة:',
+                'cart_clear': 'مسح العربة',
+                'cart_clear_confirm_title': 'مسح العربة',
+                'cart_clear_confirm_msg': 'هل أنت متأكد من أنك تريد إزالة جميع العناصر من عربة التسوق الخاصة بك؟',
+                'cart_cleared_success': 'تم مسح عربة التسوق الخاصة بك.',
+                'cart_cleared_error': 'خطأ في مسح العربة.',
+                'loading_init': 'تهيئة المتجر...',
+            }
+        };
+
+        /** Gets the translation for a key */
+        window.T = (key) => { // Expose T globally for inline HTML event handlers
+            return translations[currentLanguage][key] || key;
+        };
+
+        // --- UTILITY FUNCTIONS ---
+
+        /** Formats a price to two decimal places. */
+        const formatPrice = (price) => {
+            return parseFloat(price).toFixed(2);
+        }
+
+        /** Creates a fallback URL for an image. */
+        const getImageUrl = (url) => {
+            return url && url.startsWith('http') ? url : `https://placehold.co/400x300/4f46e5/ffffff?text=${T('logo_title')}`;
+        }
+
+        /** Clears all existing Firestore listeners. */
+        const unsubscribeAll = () => {
+            if (unsubscribeProducts) {
+                unsubscribeProducts();
+                unsubscribeProducts = null;
+            }
+            if (unsubscribeCart) {
+                unsubscribeCart();
+                unsubscribeCart = null;
+            }
+        };
+
+        /** Displays a temporary notification message (replacement for alert). */
+        const showNotification = (message, bgColorClass = 'bg-mt-green') => {
+            const notification = document.createElement('div');
+            // RTL adjustment for notification alignment
+            const textAlignClass = currentLanguage === 'ar' ? 'text-right' : 'text-left'; 
+            notification.className = `p-4 mb-3 ${bgColorClass} text-white rounded-lg shadow-xl transition-all duration-300 ease-in-out opacity-0 translate-y-2 max-w-xs ${textAlignClass}`;
+            notification.textContent = message;
+            notificationContainerEl.appendChild(notification);
+
+            // Animate in
+            setTimeout(() => {
+                notification.classList.remove('opacity-0', 'translate-y-2');
+                notification.classList.add('opacity-100', 'translate-y-0');
+            }, 10);
+
+            // Animate out and remove
+            setTimeout(() => {
+                notification.classList.remove('opacity-100', 'translate-y-0');
+                notification.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        };
+
+        /** Renders a full-screen confirmation modal. */
+        const showConfirmationModal = (titleKey, messageKey, onConfirm) => {
+            const title = T(titleKey);
+            const message = T(messageKey);
+
+            mainHeaderEl.classList.add('opacity-0');
+            mainFooterEl.classList.add('opacity-0');
+            
+            const justifyClass = currentLanguage === 'ar' ? 'justify-start' : 'justify-end';
+
+            modalContainerEl.innerHTML = `
+                <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm transform scale-95 transition-transform duration-300">
+                    <h3 class="text-xl font-bold mb-4 text-red-600">${title}</h3>
+                    <p class="text-gray-700 mb-6">${message}</p>
+                    <div class="flex ${justifyClass} space-x-3">
+                        <button id="modal-cancel" class="px-4 py-2 text-sm font-semibold rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition">${T('cancel')}</button>
+                        <button id="modal-confirm" class="px-4 py-2 text-sm font-semibold rounded-lg bg-red-600 text-white hover:bg-red-700 transition">${T('confirm')}</button>
+                    </div>
+                </div>
+            `;
+            modalContainerEl.classList.remove('hidden');
+            
+            // Animate in
+            setTimeout(() => {
+                const modalContent = modalContainerEl.querySelector('div');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+
+            const closeModal = () => {
+                const modalContent = modalContainerEl.querySelector('div');
+                modalContent.classList.remove('scale-100');
+                modalContent.classList.add('scale-95');
+                setTimeout(() => {
+                    modalContainerEl.classList.add('hidden');
+                    modalContainerEl.innerHTML = '';
+                    mainHeaderEl.classList.remove('opacity-0');
+                    mainFooterEl.classList.remove('opacity-0');
+                }, 300);
+            };
+
+            document.getElementById('modal-cancel').onclick = closeModal;
+            document.getElementById('modal-confirm').onclick = () => {
+                onConfirm();
+                closeModal();
+            };
+        };
+
+        // --- CORE APPLICATION FUNCTIONS ---
+
+        /** Renders the main content area based on the current page state. */
+        window.renderPage = (pageName) => {
+            currentPage = pageName;
+            mainHeaderEl.classList.remove('hidden');
+            mainFooterEl.classList.remove('hidden');
+            loadingSpinnerEl.classList.remove('hidden');
+            appContentEl.innerHTML = ''; // Clear previous content
+
+            switch (currentPage) {
+                case 'home':
+                    renderHomePage();
+                    break;
+                case 'cart':
+                    renderCartPage();
+                    break;
+                case 'admin-login':
+                    renderAdminLoginPage();
+                    break;
+                case 'admin-panel':
+                    renderAdminPanel();
+                    break;
+                default:
+                    renderHomePage();
+            }
+
+            loadingSpinnerEl.classList.add('hidden');
+        };
+
+        /** Renders the Home Page (Hero + Products) */
+        const renderHomePage = () => {
+            appContentEl.innerHTML = `
+                <!-- Hero Section -->
+                <section class="mb-12 bg-mt-primary text-white rounded-xl shadow-2xl overflow-hidden p-8 sm:p-16">
+                    <div class="max-w-3xl mx-auto text-center">
+                        <h1 class="text-4xl sm:text-5xl font-extrabold mb-3" data-translate="hero_title">${T('hero_title')}</h1>
+                        <p class="text-xl font-light mb-8 opacity-90" data-translate="hero_subtitle">${T('hero_subtitle')}</p>
+                        <a href="#products" class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-full shadow-lg text-mt-primary bg-mt-accent hover:bg-amber-600 transition duration-300 transform hover:scale-105" onclick="scrollToProducts()">
+                            ${T('hero_explore')}
+                        </a>
+                    </div>
+                </section>
+
+                <!-- Products Section -->
+                <section id="products" class="mb-10">
+                    <h2 class="text-3xl font-bold mb-8 border-b-2 border-mt-primary pb-2" data-translate="products_heading">${T('products_heading')}</h2>
+                    <div id="product-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <!-- Products loaded by fetchProducts -->
+                    </div>
+                    <div id="no-products" class="hidden text-center text-xl text-gray-500 py-10">
+                        ${T('admin_no_products')}
+                    </div>
+                </section>
+            `;
+            // This re-renders the products immediately after the structure is ready
+            renderProductList(currentProducts);
+        };
+
+        /** Renders the Product List based on currentProducts state */
+        const renderProductList = (products) => {
+            const productListEl = document.getElementById('product-list');
+            const noProductsEl = document.getElementById('no-products');
+
+            if (!productListEl) return;
+
+            if (products.length === 0) {
+                productListEl.innerHTML = '';
+                noProductsEl?.classList.remove('hidden');
+                return;
+            }
+            noProductsEl?.classList.add('hidden');
+
+            productListEl.innerHTML = products.map(product => {
+                const imageSrc = getImageUrl(product.imageUrl);
+                const priceHtml = product.salePrice 
+                    ? `<p class="text-2xl font-bold text-red-600">$${formatPrice(product.salePrice)}</p><p class="text-sm text-gray-500 line-through ml-2">$${formatPrice(product.price)}</p>`
+                    : `<p class="text-2xl font-bold text-mt-primary">$${formatPrice(product.price)}</p>`;
+
+                return `
+                    <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition duration-300 overflow-hidden flex flex-col">
+                        <img src="${imageSrc}" onerror="this.onerror=null; this.src='${getImageUrl()}';" alt="${product.name}" class="w-full h-48 object-cover object-center group-hover:opacity-75 transition-opacity duration-300">
+                        <div class="p-5 flex flex-col flex-grow">
+                            <h3 class="text-lg font-semibold mb-2">${product.name}</h3>
+                            <p class="text-gray-600 text-sm mb-3 flex-grow">${product.description || T('product_default_desc')}</p>
+                            <div class="flex items-center justify-between mb-4">
+                                ${priceHtml}
+                            </div>
+                            <button onclick="addToCart('${product.id}')" class="w-full bg-mt-green text-white py-2 rounded-lg font-medium hover:bg-emerald-600 transition duration-150 shadow-md">
+                                ${T('add_to_cart')}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        /** Renders the Shopping Cart Page */
+        const renderCartPage = () => {
+            const isRtl = currentLanguage === 'ar';
+            const total = cartItems.reduce((sum, item) => sum + item.quantity * (item.product.salePrice || item.product.price), 0);
+            
+            appContentEl.innerHTML = `
+                <h1 class="text-3xl font-bold mb-8 border-b-2 border-mt-primary pb-2" data-translate="cart_heading">${T('cart_heading')}</h1>
+                <div class="flex flex-col lg:flex-row gap-8">
+                    
+                    <!-- Cart Items List -->
+                    <div class="lg:w-3/4 space-y-4" id="cart-list">
+                        ${cartItems.length > 0 ? cartItems.map(item => {
+                            const product = item.product;
+                            const imageSrc = getImageUrl(product.imageUrl);
+                            const price = product.salePrice || product.price;
+                            const subtotal = item.quantity * price;
+
+                            return `
+                                <div class="flex bg-white rounded-xl shadow-md p-4 items-center transition duration-150 hover:shadow-lg">
+                                    <img src="${imageSrc}" onerror="this.onerror=null; this.src='${getImageUrl(product.name)}';" alt="${product.name}" class="w-20 h-20 object-cover rounded-md flex-shrink-0">
+                                    
+                                    <div class="flex-grow mx-4">
+                                        <h3 class="text-lg font-semibold">${product.name}</h3>
+                                        <p class="text-sm text-gray-500">${product.description || T('product_default_desc')}</p>
+                                    </div>
+                                    
+                                    <div class="flex items-center space-x-4 flex-shrink-0">
+                                        <div class="flex items-center border border-gray-300 rounded-lg p-1">
+                                            <button onclick="updateCartItemQuantity('${item.id}', -1)" class="p-1 text-gray-500 hover:text-red-500 transition duration-150 rounded-full">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>
+                                            </button>
+                                            <input type="number" min="1" value="${item.quantity}" onchange="updateCartItemQuantityByInput('${item.id}', this.value)" 
+                                                class="w-10 text-center font-medium border-none focus:ring-0 focus:outline-none bg-white p-0 text-gray-800" />
+                                            <button onclick="updateCartItemQuantity('${item.id}', 1)" class="p-1 text-gray-500 hover:text-mt-green transition duration-150 rounded-full">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                                            </button>
+                                        </div>
+                                        <div class="text-right w-20">
+                                            <p class="text-lg font-bold text-gray-800">$${formatPrice(subtotal)}</p>
+                                            <p class="text-xs text-gray-500">$${formatPrice(price)} x ${item.quantity}</p>
+                                        </div>
+                                        <button onclick="showRemoveModal('${item.id}')" class="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition duration-150 ml-4">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('') : `
+                            <div class="bg-white rounded-xl shadow-md p-10 text-center text-gray-500 text-xl">
+                                ${T('cart_empty')}
+                            </div>
+                        `}
+                    </div>
+
+                    <!-- Cart Summary/Actions -->
+                    <div class="lg:w-1/4">
+                        <div class="bg-white rounded-xl shadow-lg p-6 space-y-4">
+                            <h2 class="text-xl font-bold border-b pb-2 mb-2">${T('cart_total')}</h2>
+                            <div class="flex justify-between font-semibold text-2xl text-mt-primary">
+                                <span data-translate="cart_total">${T('cart_total')}</span>
+                                <span>$${formatPrice(total)}</span>
+                            </div>
+                            <button onclick="showNotification(T('cart_checkout') + ' ' + T('notification_checkout'))" class="w-full bg-mt-green text-white py-3 rounded-lg font-bold hover:bg-emerald-600 transition duration-150 shadow-md">
+                                ${T('cart_checkout')}
+                            </button>
+                            <button onclick="showClearCartModal()" class="w-full text-sm text-red-500 py-2 hover:text-red-700 transition duration-150">
+                                ${T('cart_clear')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        /** Renders the Admin Login Page */
+        const renderAdminLoginPage = () => {
+            adminLoggedIn = false;
+            mainHeaderEl.classList.add('hidden');
+            mainFooterEl.classList.add('hidden');
+
+            appContentEl.innerHTML = `
+                <div class="flex flex-col items-center justify-center min-h-[70vh] p-4">
+                    <div class="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md">
+                        <h1 class="text-3xl font-bold text-center mb-2 text-mt-primary" data-translate="admin_login_title">${T('admin_login_title')}</h1>
+                        <p class="text-center text-gray-500 mb-6" data-translate="admin_login_desc">${T('admin_login_desc')}</p>
+                        
+                        <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+                            <div>
+                                <input type="password" id="admin-pin" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mt-green focus:border-mt-green" placeholder="${T('admin_pin_placeholder')}" required>
+                            </div>
+                            <button type="submit" class="w-full bg-mt-green text-white py-3 rounded-lg font-bold hover:bg-emerald-600 transition duration-150 shadow-md">
+                                ${T('admin_login_btn')}
+                            </button>
+                        </form>
+                        
+                        <div class="mt-6 text-center">
+                            <button onclick="renderPage('home')" class="text-sm text-mt-primary hover:text-indigo-700 transition duration-150">
+                                ${T('admin_back_to_store')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+        
+        // --- ADMIN PANEL RENDERING ---
+
+        const adminPanelPages = [
+            { key: 'summary', icon: '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l-2 2m-8 8h8M9 21H6a1 1 0 01-1-1v-4a1 1 0 011-1h3m10 5v-4a1 1 0 00-1-1h-3M10 21v-4M7 21v-4M17 21v-4m-12 0h14"></path></svg>', textKey: 'admin_summary' },
+            { key: 'products', icon: '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>', textKey: 'admin_products' },
+            // NEW ADMIN PAGE LINKS
+            { key: 'change-password', icon: '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2v5a2 2 0 01-2 2h-2m-2-4h-2m-2 4h-2m2-4V9a2 2 0 012-2h6m-7 0a4 4 0 11-8 0 4 4 0 018 0z" /></svg>', textKey: 'admin_change_password' },
+            { key: 'page-context', icon: '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-4h.01M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>', textKey: 'admin_page_context_management' },
+            // END NEW ADMIN PAGE LINKS
+            { key: 'orders', icon: '<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>', textKey: 'admin_orders' },
+        ];
+
+
+        const renderAdminPanel = () => {
+            if (!adminLoggedIn) {
+                renderPage('admin-login');
+                return;
+            }
+            mainHeaderEl.classList.add('hidden');
+            mainFooterEl.classList.add('hidden');
+
+            appContentEl.innerHTML = `
+                <div class="flex h-[70vh] bg-white rounded-xl shadow-2xl overflow-hidden">
+                    
+                    <!-- Admin Sidebar -->
+                    <div class="w-64 bg-gray-800 text-white flex flex-col justify-between">
+                        <div>
+                            <div class="p-6 text-2xl font-bold text-mt-accent border-b border-gray-700">
+                                ${T('admin_panel_title')}
+                            </div>
+                            <nav class="mt-5 space-y-1 px-2" id="admin-nav">
+                                ${adminPanelPages.map(page => `
+                                    <button onclick="setAdminPage('${page.key}')" class="w-full flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition duration-150 ${adminPage === page.key ? 'bg-gray-900 text-white' : ''}">
+                                        ${page.icon}
+                                        <span class="ml-3 font-medium" data-translate="${page.textKey}">${T(page.textKey)}</span>
+                                    </button>
+                                `).join('')}
+                            </nav>
+                        </div>
+                        
+                        <div class="p-4 border-t border-gray-700 space-y-2">
+                            <button onclick="renderPage('home')" class="w-full flex items-center px-4 py-2 text-sm text-gray-400 hover:bg-gray-700 hover:text-white rounded-lg transition duration-150">
+                                <svg class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                                ${T('admin_view_store')}
+                            </button>
+                            <button onclick="handleAdminLogout()" class="w-full flex items-center px-4 py-2 text-sm text-red-400 hover:bg-gray-700 hover:text-red-300 rounded-lg transition duration-150">
+                                <svg class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                                ${T('admin_logout')}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Admin Content Area -->
+                    <div class="flex-grow p-8 overflow-y-auto" id="admin-content-area">
+                        <!-- Content will be dynamically loaded -->
+                    </div>
+                </div>
+            `;
+            renderAdminPanelContent(); // Load initial content
+        };
+
+        window.setAdminPage = (pageKey) => {
+            adminPage = pageKey;
+            renderAdminPanel(); // Re-render the panel to update sidebar and content
+        };
+
+        const renderAdminPanelContent = () => {
+            const contentEl = document.getElementById('admin-content-area');
+            if (!contentEl) return;
+
+            switch (adminPage) {
+                case 'summary':
+                    contentEl.innerHTML = renderAdminSummaryPage();
+                    break;
+                case 'products':
+                    contentEl.innerHTML = renderProductManagementPage();
+                    // If we are editing, pre-fill the form
+                    if (editingProduct) {
+                        setEditingProduct(editingProduct);
+                    }
+                    break;
+                // NEW ADMIN PANEL CASES
+                case 'change-password':
+                    contentEl.innerHTML = renderChangePasswordPage();
+                    break;
+                case 'page-context':
+                    contentEl.innerHTML = renderPageContextManagementPage();
+                    // Attach listeners after rendering to handle the mock content switch
+                    attachPageContextListeners(); 
+                    break;
+                // END NEW ADMIN PANEL CASES
+                case 'orders':
+                    contentEl.innerHTML = renderOrderManagementPage();
+                    break;
+                default:
+                    contentEl.innerHTML = renderAdminSummaryPage();
+            }
+        };
+
+        // --- NEW ADMIN PAGE IMPLEMENTATIONS (MOCK) ---
+
+        /** Renders the Change Password/PIN Page */
+        const renderChangePasswordPage = () => {
+            return `
+                <div class="space-y-6">
+                    <h3 class="text-3xl font-bold text-gray-800 border-b-2 border-red-200 pb-2" data-translate="admin_panel_password_title">${T('admin_panel_password_title')}</h3>
+                    <p class="text-gray-600" data-translate="admin_panel_password_desc">${T('admin_panel_password_desc')}</p>
+                    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 max-w-lg">
+                        <form onsubmit="handlePasswordChange(event)" class="space-y-4">
+                            <div>
+                                <label for="new-pin" class="block text-sm font-medium text-gray-700">
+                                    ${T('admin_new_pin_placeholder')}
+                                </label>
+                                <input type="password" id="new-pin" name="new-pin" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="********" required>
+                            </div>
+                            <div>
+                                <label for="confirm-pin" class="block text-sm font-medium text-gray-700">
+                                    ${T('admin_new_pin_placeholder')} (${T('confirm')})
+                                </label>
+                                <input type="password" id="confirm-pin" name="confirm-pin" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="********" required>
+                            </div>
+                            <button type="submit" class="w-full mt-4 inline-flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 transition duration-150">
+                                ${T('admin_update_pin_btn')}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            `;
+        };
+
+        /** Renders the Page Context Management Page */
+        const renderPageContextManagementPage = () => {
+            return `
+                <div class="space-y-6">
+                    <h3 class="text-3xl font-bold text-gray-800 border-b-2 border-mt-accent pb-2" data-translate="admin_page_content_title">${T('admin_page_content_title')}</h3>
+                    <p class="text-gray-600" data-translate="admin_page_content_desc">${T('admin_page_content_desc')}</p>
+                    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                        <form onsubmit="handlePageContextUpdate(event)" class="space-y-4">
+                            <div>
+                                <label for="page-select" class="block text-sm font-medium text-gray-700">
+                                    ${T('admin_select_page')}
+                                </label>
+                                <select id="page-select" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-mt-accent focus:border-mt-accent">
+                                    <option value="hero_subtitle">Hero Subtitle</option>
+                                    <option value="about">About Us Mock Text</option>
+                                    <option value="contact">Contact Us Mock Text</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="page-content" class="block text-sm font-medium text-gray-700">
+                                    ${T('admin_page_content_textarea')}
+                                </label>
+                                <textarea id="page-content" rows="6" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-mt-accent focus:border-mt-accent" placeholder="Enter new content..."></textarea>
+                            </div>
+                            <button type="submit" class="w-full mt-4 inline-flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-mt-accent hover:bg-amber-600 transition duration-150">
+                                ${T('admin_update_content_btn')}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            `;
+        };
+        
+        // Attach listener for the Page Context select/textarea
+        const attachPageContextListeners = () => {
+            const pageSelect = document.getElementById('page-select');
+            const pageContent = document.getElementById('page-content');
+
+            if (pageSelect && pageContent) {
+                const updateTextarea = () => {
+                    const selectedPage = pageSelect.value;
+                    let mockContent = T(selectedPage); // Try to get a real translation key first
+                    
+                    // Mock content for non-translation keys
+                    if (selectedPage === 'about') {
+                        mockContent = `This is the mock editable content for the About Us page. We are a leading e-commerce provider focusing on quality and speed since 2025.`;
+                    } else if (selectedPage === 'contact') {
+                        mockContent = `This is the mock editable content for the Contact Us page. Reach us at support@mtshop.com or call +1 234 567 890.`;
+                    } else if (selectedPage === 'hero_subtitle') {
+                         mockContent = T('hero_subtitle');
+                    }
+                    pageContent.value = mockContent;
+                };
+
+                pageSelect.onchange = updateTextarea;
+                
+                // Set initial content on load
+                updateTextarea();
+            }
+        };
+
+        // Global handler for mock password change
+        window.handlePasswordChange = (event) => {
+            event.preventDefault();
+            const newPin = document.getElementById('new-pin').value;
+            const confirmPin = document.getElementById('confirm-pin').value;
+
+            if (newPin !== confirmPin) {
+                showNotification('New PINs do not match.', 'bg-red-500');
+                return;
+            }
+
+            // Mock action: In a real app, you would call Firebase's updatePassword here.
+            showNotification(`${T('admin_update_pin_btn').replace(' (Mocked)', '')} request received. Password not changed (Demo)!`, 'bg-blue-500');
+            
+            // Clear form
+            document.getElementById('new-pin').value = '';
+            document.getElementById('confirm-pin').value = '';
+        };
+        
+        // Global handler for mock page context update
+        window.handlePageContextUpdate = (event) => {
+            event.preventDefault();
+            const page = document.getElementById('page-select').value;
+            const content = document.getElementById('page-content').value;
+
+            // Mock action: In a real app, you would save this content to a 'pages' collection in Firestore.
+            showNotification(`Content for '${page}' saved successfully (Mocked). New content: "${content.substring(0, 30)}..."`, 'bg-mt-accent');
+        };
+
+        // --- EXISTING ADMIN PAGE IMPLEMENTATIONS (Simplified for brevity, kept structure) ---
+
+        const renderAdminSummaryPage = () => {
+            const productCount = currentProducts.length;
+            const mockShoppers = 120;
+            const mockRevenue = productCount * 50; // Simple mock calculation
+            const cards = [
+                { title: 'admin_total_products', value: productCount, color: 'text-mt-primary', icon: '<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>' },
+                { title: 'admin_unique_shoppers', value: mockShoppers, color: 'text-mt-green', icon: '<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>' },
+                { title: 'admin_revenue', value: `$${formatPrice(mockRevenue)}`, color: 'text-mt-accent', icon: '<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V9m0 3v2.5M9 21h6a2 2 0 002-2v-4.668.668V5.553C17 3.483 15.54 2 13.684 2H10.316C8.46 2 7 3.483 7 5.553v13.884C7 19.517 8.46 21 10.316 21H12z" /></svg>' }
+            ];
+
+            return `
+                <h3 class="text-3xl font-bold text-gray-800 mb-6">${T('admin_panel_title')} - ${T('admin_summary')}</h3>
+                <p class="text-gray-600 mb-8">${T('admin_welcome')}</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    ${cards.map(card => `
+                        <div class="bg-gray-50 rounded-xl shadow-lg p-6 border-l-4 border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500" data-translate="${card.title}">${T(card.title)}</p>
+                                    <p class="text-3xl font-extrabold ${card.color}">${card.value}</p>
+                                </div>
+                                <div class="${card.color} opacity-50">
+                                    ${card.icon}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="bg-gray-50 rounded-xl shadow-lg p-6 border-l-4 border-mt-primary">
+                    <h4 class="text-xl font-semibold mb-3">${T('admin_current_user_id')}</h4>
+                    <code onclick="copyUserId()" class="text-sm cursor-pointer hover:text-mt-primary break-all">${userId}</code>
+                    <p class="text-xs text-gray-500 mt-1">Click to copy User ID.</p>
+                </div>
+            `;
+        };
+
+        const renderProductManagementPage = () => {
+            const productFormHtml = `
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                    <h3 class="text-2xl font-bold mb-4 text-mt-primary" id="product-form-title">${T('admin_add_new_product')}</h3>
+                    <form onsubmit="handleProductSubmit(event)" id="product-form" class="space-y-4">
+                        <input type="hidden" id="product-id" name="id">
+                        <div>
+                            <label for="product-name" class="block text-sm font-medium text-gray-700">${T('admin_product_name')}</label>
+                            <input type="text" id="product-name" name="name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-mt-primary focus:border-mt-primary" required>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="product-price" class="block text-sm font-medium text-gray-700">${T('admin_price')}</label>
+                                <input type="number" step="0.01" id="product-price" name="price" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-mt-primary focus:border-mt-primary" required>
+                            </div>
+                            <div>
+                                <label for="product-sale-price" class="block text-sm font-medium text-gray-700">${T('admin_sale_price')}</label>
+                                <input type="number" step="0.01" id="product-sale-price" name="salePrice" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-mt-primary focus:border-mt-primary">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="product-image-url" class="block text-sm font-medium text-gray-700">${T('admin_image_url')}</label>
+                            <input type="url" id="product-image-url" name="imageUrl" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-mt-primary focus:border-mt-primary" placeholder="e.g. https://example.com/image.jpg">
+                        </div>
+                        <div>
+                            <label for="product-description" class="block text-sm font-medium text-gray-700">${T('admin_description')}</label>
+                            <textarea id="product-description" name="description" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-mt-primary focus:border-mt-primary"></textarea>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button type="submit" id="product-submit-btn" class="flex-grow inline-flex items-center justify-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-mt-primary hover:bg-indigo-700 transition duration-150">
+                                ${T('admin_add_new_product')}
+                            </button>
+                            <button type="button" onclick="cancelEdit()" id="product-cancel-btn" class="hidden px-4 py-2 border border-gray-300 text-base font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 transition duration-150">
+                                ${T('admin_cancel_edit')}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+
+            const productTableHtml = `
+                <h3 class="text-2xl font-bold mb-4 mt-8">${T('admin_current_products')} (${currentProducts.length})</h3>
+                <div class="bg-white rounded-xl shadow-lg overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${T('admin_product_name')}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${T('admin_price')}</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200" id="product-table-body">
+                            ${currentProducts.length === 0 ? `
+                                <tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">${T('admin_no_products')}</td></tr>
+                            ` : currentProducts.map(p => `
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs">${p.id}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${p.name}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        $${formatPrice(p.price)}
+                                        ${p.salePrice ? `<span class="text-red-500 ml-1">($${formatPrice(p.salePrice)})</span>` : ''}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                        <button onclick="startEditProduct('${p.id}')" class="text-mt-primary hover:text-indigo-900">${T('admin_edit_product')}</button>
+                                        <button onclick="showDeleteProductModal('${p.id}')" class="text-red-600 hover:text-red-900">Delete</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            return `
+                <h3 class="text-3xl font-bold text-gray-800 mb-6">${T('admin_panel_title')} - ${T('admin_products')}</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-1">${productFormHtml}</div>
+                    <div class="lg:col-span-2">${productTableHtml}</div>
+                </div>
+            `;
+        };
+        
+        const renderOrderManagementPage = () => {
+            // Mock orders data for demonstration
+            const mockOrders = [
+                { id: 'ORD-001', userId: 'user-001', total: 49.98, status: T('shipped'), date: '2025-09-01' },
+                { id: 'ORD-002', userId: 'user-002', total: 125.00, status: T('processing'), date: '2025-09-05' },
+                { id: 'ORD-003', userId: 'user-001', total: 19.50, status: T('cancelled'), date: '2025-09-08' },
+            ];
+
+            const getStatusColor = (status) => {
+                if (status === T('shipped')) return 'bg-mt-green text-white';
+                if (status === T('processing')) return 'bg-mt-accent text-white';
+                if (status === T('cancelled')) return 'bg-red-500 text-white';
+                return 'bg-gray-400 text-white';
+            };
+
+            return `
+                <h3 class="text-3xl font-bold text-gray-800 mb-6">${T('admin_panel_title')} - ${T('admin_orders_heading')}</h3>
+                <p class="text-gray-600 mb-8">${T('admin_orders_note')}</p>
+
+                <div class="bg-white rounded-xl shadow-lg overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${mockOrders.map(order => `
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${order.id}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs">${order.userId}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${order.date}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${formatPrice(order.total)}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}">
+                                            ${order.status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        };
+
+        // --- AUTH & INITIALIZATION ---
+
+        const initializeFirebase = async () => {
+            if (!firebaseConfig) {
+                console.error("Firebase config is missing.");
+                showNotification(T('notif_init_failed') + ' No config found.', 'bg-red-500');
+                return;
+            }
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                // Set persistence to in-memory since we rely on the initial auth token
+                await setPersistence(auth, inMemoryPersistence);
+
+                await new Promise(resolve => {
+                    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+                        if (user) {
+                            userId = user.uid;
+                        } else {
+                            if (initialAuthToken) {
+                                await signInWithCustomToken(auth, initialAuthToken).catch(e => {
+                                    console.error("Custom token sign-in failed. Falling back to anonymous.", e);
+                                    signInAnonymously(auth);
+                                });
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                        }
+                        isAuthReady = true;
+                        unsubscribe(); 
+                        resolve();
+                    });
+                });
+
+                console.log("Firebase initialized. User ID:", userId);
+                await setupListeners();
+                renderPage(currentPage); // Start rendering the app
+
+            } catch (error) {
+                console.error("Initialization error:", error);
+                document.getElementById('loading-text').textContent = T('notif_init_failed') + error.message;
+                showNotification(T('notif_init_failed') + error.message, 'bg-red-500');
+            }
+        };
+
+        // --- FIRESTORE LISTENERS ---
+
+        const setupListeners = async () => {
+            if (!isAuthReady || !db) {
+                console.warn(T('notif_wait_auth'));
+                return;
+            }
+            unsubscribeAll(); // Clear old listeners
+
+            // 1. Products Collection (Public Data)
+            const productsPath = `/artifacts/${appId}/public/data/products`;
+            const productsQuery = query(collection(db, productsPath));
+            
+            unsubscribeProducts = onSnapshot(productsQuery, (snapshot) => {
+                currentProducts = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    currentProducts.push({ id: doc.id, ...data });
+                });
+                renderProductList(currentProducts);
+                // If in admin mode, re-render product table
+                if (adminLoggedIn && adminPage === 'products') {
+                    renderAdminPanelContent();
+                }
+            }, (error) => {
+                console.error("Error fetching products:", error);
+            });
+
+            // 2. Cart Collection (Private Data)
+            const cartPath = `/artifacts/${appId}/users/${userId}/cart`;
+            const cartQuery = query(collection(db, cartPath));
+            
+            unsubscribeCart = onSnapshot(cartQuery, (snapshot) => {
+                const newCartItems = [];
+                snapshot.forEach(doc => {
+                    const item = doc.data();
+                    const product = currentProducts.find(p => p.id === item.productId);
+                    if (product) {
+                        newCartItems.push({ id: doc.id, ...item, product });
+                    }
+                });
+                cartItems = newCartItems;
+                cartCountEl.textContent = cartItems.length;
+                
+                // Only re-render cart page if currently active
+                if (currentPage === 'cart') {
+                    renderCartPage();
+                }
+            }, (error) => {
+                console.error("Error fetching cart:", error);
+            });
+        };
+
+        // --- PRODUCT MANAGEMENT (Admin) ---
+
+        window.handleProductSubmit = async (event) => {
+            event.preventDefault();
+            if (!adminLoggedIn || !db) return;
+
+            const form = event.target;
+            const productId = form.elements['product-id'].value;
+            const name = form.elements['product-name'].value;
+            const price = parseFloat(form.elements['product-price'].value);
+            const salePriceValue = form.elements['product-sale-price'].value;
+            const imageUrl = form.elements['product-image-url'].value;
+            const description = form.elements['product-description'].value;
+
+            const newProduct = {
+                name,
+                price,
+                salePrice: salePriceValue ? parseFloat(salePriceValue) : null,
+                imageUrl,
+                description,
+                createdAt: serverTimestamp()
+            };
+
+            try {
+                const productsRef = collection(db, `/artifacts/${appId}/public/data/products`);
+                if (productId) {
+                    await setDoc(doc(productsRef, productId), newProduct, { merge: true });
+                    showNotification(T('notif_product_updated'));
+                } else {
+                    await addDoc(productsRef, newProduct);
+                    showNotification(T('notif_product_added'));
+                }
+                form.reset();
+                editingProduct = null;
+                renderAdminPanelContent();
+            } catch (e) {
+                console.error(T('notif_saving_error'), e);
+                showNotification(T('notif_saving_error') + e.message, 'bg-red-500');
+            }
+        };
+
+        window.startEditProduct = (productId) => {
+            editingProduct = currentProducts.find(p => p.id === productId);
+            if (!editingProduct) {
+                showNotification(T('notif_product_not_found'), 'bg-red-500');
+                return;
+            }
+            setEditingProduct(editingProduct);
+        };
+
+        const setEditingProduct = (product) => {
+            document.getElementById('product-form-title').textContent = T('admin_edit_product');
+            document.getElementById('product-submit-btn').textContent = T('admin_update_product');
+            document.getElementById('product-cancel-btn').classList.remove('hidden');
+
+            document.getElementById('product-id').value = product.id;
+            document.getElementById('product-name').value = product.name;
+            document.getElementById('product-price').value = product.price;
+            document.getElementById('product-sale-price').value = product.salePrice || '';
+            document.getElementById('product-image-url').value = product.imageUrl || '';
+            document.getElementById('product-description').value = product.description || '';
+        };
+
+        window.cancelEdit = () => {
+            editingProduct = null;
+            document.getElementById('product-form').reset();
+            document.getElementById('product-form-title').textContent = T('admin_add_new_product');
+            document.getElementById('product-submit-btn').textContent = T('admin_add_new_product');
+            document.getElementById('product-cancel-btn').classList.add('hidden');
+        };
+        
+        window.showDeleteProductModal = (productId) => {
+            const productToDelete = currentProducts.find(p => p.id === productId);
+            if (!productToDelete) return;
+
+            showConfirmationModal('Remove Item', `Are you sure you want to delete product: "${productToDelete.name}"? This action cannot be undone.`, () => {
+                deleteProduct(productId);
+            });
+        };
+
+        const deleteProduct = async (productId) => {
+            if (!adminLoggedIn || !db) return;
+            try {
+                await deleteDoc(doc(db, `/artifacts/${appId}/public/data/products`, productId));
+                showNotification(T('notif_product_deleted'));
+                // Check if the deleted product was being edited
+                if (editingProduct && editingProduct.id === productId) {
+                    cancelEdit();
+                }
+            } catch (e) {
+                console.error(T('notif_deleting_error'), e);
+                showNotification(T('notif_deleting_error') + e.message, 'bg-red-500');
+            }
+        };
+
+        // --- CART MANAGEMENT (Client) ---
+
+        window.addToCart = async (productId) => {
+            if (!isAuthReady || !db) {
+                 showNotification(T('notif_wait_auth'), 'bg-gray-500');
+                return;
+            }
+            const product = currentProducts.find(p => p.id === productId);
+            if (!product) {
+                showNotification(T('notif_product_not_found'), 'bg-red-500');
+                return;
+            }
+
+            try {
+                const cartRef = collection(db, `/artifacts/${appId}/users/${userId}/cart`);
+                
+                // Check if item already exists
+                const existingItem = cartItems.find(item => item.productId === productId);
+
+                if (existingItem) {
+                    const newQuantity = existingItem.quantity + 1;
+                    await updateDoc(doc(cartRef, existingItem.id), {
+                        quantity: newQuantity,
+                        updatedAt: serverTimestamp()
+                    });
+                } else {
+                    await addDoc(cartRef, {
+                        productId: productId,
+                        quantity: 1,
+                        addedAt: serverTimestamp()
+                    });
+                }
+                showNotification(`"${product.name}" ${T('notif_item_added')}`);
+            } catch (e) {
+                console.error(T('notif_cart_error'), e);
+                showNotification(T('notif_cart_error') + e.message, 'bg-red-500');
+            }
+        };
+
+        window.updateCartItemQuantity = async (cartItemId, change) => {
+            const item = cartItems.find(i => i.id === cartItemId);
+            if (!item) return;
+
+            const newQuantity = item.quantity + change;
+            
+            if (newQuantity <= 0) {
+                // If quantity is zero or less, show remove modal
+                showRemoveModal(cartItemId);
+                return;
+            }
+            
+            try {
+                const cartItemRef = doc(db, `/artifacts/${appId}/users/${userId}/cart`, cartItemId);
+                await updateDoc(cartItemRef, {
+                    quantity: newQuantity,
+                    updatedAt: serverTimestamp()
+                });
+            } catch (e) {
+                console.error(T('cart_update_error'), e);
+                showNotification(T('cart_update_error') + e.message, 'bg-red-500');
+            }
+        };
+
+        window.updateCartItemQuantityByInput = async (cartItemId, quantityValue) => {
+             const newQuantity = parseInt(quantityValue, 10);
+            if (isNaN(newQuantity) || newQuantity < 1) {
+                showNotification("Quantity must be at least 1.", 'bg-red-500');
+                renderCartPage(); // Re-render to restore previous quantity
+                return;
+            }
+            
+            const item = cartItems.find(i => i.id === cartItemId);
+            if (!item) return;
+
+             try {
+                const cartItemRef = doc(db, `/artifacts/${appId}/users/${userId}/cart`, cartItemId);
+                await updateDoc(cartItemRef, {
+                    quantity: newQuantity,
+                    updatedAt: serverTimestamp()
+                });
+            } catch (e) {
+                console.error(T('cart_update_error'), e);
+                showNotification(T('cart_update_error') + e.message, 'bg-red-500');
+            }
+        };
+
+        window.showRemoveModal = (cartItemId) => {
+            const item = cartItems.find(i => i.id === cartItemId);
+            if (!item) return;
+
+            showConfirmationModal('remove_item_title', T('remove_item_msg'), () => {
+                removeItemFromCart(cartItemId, item.product.name);
+            });
+        };
+
+        const removeItemFromCart = async (cartItemId, productName) => {
+            if (!isAuthReady || !db) return;
+            try {
+                await deleteDoc(doc(db, `/artifacts/${appId}/users/${userId}/cart`, cartItemId));
+                showNotification(`"${productName}" ${T('notif_item_removed')}`);
+            } catch (e) {
+                console.error(T('notif_removing_error'), e);
+                showNotification(T('notif_removing_error') + e.message, 'bg-red-500');
+            }
+        };
+
+        window.showClearCartModal = () => {
+             if (cartItems.length === 0) {
+                 showNotification(T('cart_empty'), 'bg-gray-500');
+                 return;
+             }
+             showConfirmationModal('cart_clear_confirm_title', T('cart_clear_confirm_msg'), clearCart);
+        };
+        
+        const clearCart = async () => {
+            if (!isAuthReady || !db) return;
+            try {
+                const deletePromises = cartItems.map(item => 
+                    deleteDoc(doc(db, `/artifacts/${appId}/users/${userId}/cart`, item.id))
+                );
+                await Promise.all(deletePromises);
+                showNotification(T('cart_cleared_success'));
+            } catch (e) {
+                console.error(T('cart_cleared_error'), e);
+                showNotification(T('cart_cleared_error') + e.message, 'bg-red-500');
+            }
+        };
+
+        // --- ADMIN LOGIN ---
+
+        window.handleAdminLogin = (event) => {
+            event.preventDefault();
+            const pin = document.getElementById('admin-pin').value;
+            if (pin === ADMIN_PIN) {
+                adminLoggedIn = true;
+                showNotification(T('notif_admin_granted'));
+                renderPage('admin-panel');
+            } else {
+                showNotification(T('notif_admin_invalid'), 'bg-red-500');
+            }
+        };
+
+        window.handleAdminLogout = () => {
+            adminLoggedIn = false;
+            showNotification(T('notif_admin_logout'), 'bg-gray-500');
+            renderPage('home');
+        };
+
+        // --- LANGUAGE AND RTL CONTROL ---
+
+        window.switchLanguage = (lang) => {
+            currentLanguage = lang;
+            localStorage.setItem('mtshop_language', lang);
+
+            const htmlEl = document.documentElement;
+            htmlEl.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+            currentLangDisplayEl.textContent = lang.toUpperCase();
+            
+            // Update page title
+            document.title = T('app_title');
+
+            // Re-render the current page to apply translations and direction
+            if (currentPage === 'admin-panel') {
+                renderAdminPanel();
+            } else {
+                renderPage(currentPage);
+            }
+        };
+
+        // --- MISC UTILS ---
+
+        window.copyUserId = () => {
+             // Use document.execCommand('copy') as navigator.clipboard.writeText() often fails in iframes
+            const tempInput = document.createElement('textarea');
+            tempInput.value = userId;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showNotification(T('notif_id_copied'), 'bg-gray-500');
+        };
+
+        window.scrollToProducts = () => {
+            const productsSection = document.getElementById('products');
+            if (productsSection) {
+                // Use setTimeout to ensure the home page is rendered before scrolling
+                setTimeout(() => {
+                    productsSection.scrollIntoView({ behavior: 'smooth' });
+                }, 10); 
+            }
+        };
+
+        // --- INITIAL SETUP ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set initial language configuration
+            switchLanguage(currentLanguage);
+            
+            // Initialize the Firebase app and listeners
+            initializeFirebase();
+        });
+    </script>
+</body>
+</html>
