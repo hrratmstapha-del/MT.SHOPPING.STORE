@@ -1573,119 +1573,96 @@
 
   <!-- باقي محتوى الصفحة -->
 
-  <!-- مكان عرض المنتجات -->
+ <!-- مكان عرض المنتجات -->
 <div id="products-list"></div>
 
 <script type="module">
-  import { loadProducts } from './js/supabaseClient.js';
+  import { supabase } from './js/supabaseClient.js';
 
+  // --- تحميل المنتجات ---
+  async function loadProducts() {
+      const { data, error } = await supabase.from('products').select('*');
+
+      if (error) {
+          console.error('خطأ في جلب البيانات:', error);
+          return;
+      }
+
+      const container = document.getElementById('products-list');
+      container.innerHTML = '';
+
+      data.forEach((product) => {
+          const card = document.createElement('div');
+          card.className = 'product-card';
+          card.innerHTML = `
+              <h3>${product.name}</h3>
+              <p>${product.description}</p>
+              <strong>${product.price} درهم</strong>
+          `;
+          container.appendChild(card);
+      });
+  }
+
+  // --- ADMIN LOGIN ---
+  window.handleAdminLogin = (event) => {
+      event.preventDefault();
+      const pin = document.getElementById('admin-pin').value;
+      if (pin === ADMIN_PIN) {
+          adminLoggedIn = true;
+          showNotification(T('notif_admin_granted'));
+          renderPage('admin-panel');
+      } else {
+          showNotification(T('notif_admin_invalid'), 'bg-red-500');
+      }
+  };
+
+  window.handleAdminLogout = () => {
+      adminLoggedIn = false;
+      showNotification(T('notif_admin_logout'), 'bg-gray-500');
+      renderPage('home');
+  };
+
+  // --- LANGUAGE AND RTL CONTROL ---
+  window.switchLanguage = (lang) => {
+      currentLanguage = lang;
+      localStorage.setItem('mtshop_language', lang);
+
+      const htmlEl = document.documentElement;
+      htmlEl.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+      currentLangDisplayEl.textContent = lang.toUpperCase();
+      document.title = T('app_title');
+
+      if (currentPage === 'admin-panel') {
+          renderAdminPanel();
+      } else {
+          renderPage(currentPage);
+      }
+  };
+
+  // --- MISC UTILS ---
+  window.copyUserId = () => {
+      const tempInput = document.createElement('textarea');
+      tempInput.value = userId;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+      showNotification(T('notif_id_copied'), 'bg-gray-500');
+  };
+
+  window.scrollToProducts = () => {
+      const productsSection = document.getElementById('products');
+      if (productsSection) {
+          setTimeout(() => {
+              productsSection.scrollIntoView({ behavior: 'smooth' });
+          }, 10);
+      }
+  };
+
+  // --- تنفيذ كل شيء بعد تحميل الصفحة ---
   document.addEventListener('DOMContentLoaded', () => {
-      // إعداد اللغة
-      switchLanguage(currentLanguage);
-
-      // تهيئة Firebase إذا تحتاجه
-      initializeFirebase();
-
-      // تحميل المنتجات من Supabase
       loadProducts();
+      // إذا أردت: initializeFirebase();
+      // إذا أردت: switchLanguage(currentLanguage);
   });
 </script>
-
-
-    // --- ADMIN LOGIN ---
-
-    window.handleAdminLogin = (event) => {
-        event.preventDefault();
-        const pin = document.getElementById('admin-pin').value;
-        if (pin === ADMIN_PIN) {
-            adminLoggedIn = true;
-            showNotification(T('notif_admin_granted'));
-            renderPage('admin-panel');
-        } else {
-            showNotification(T('notif_admin_invalid'), 'bg-red-500');
-        }
-    };
-
-    window.handleAdminLogout = () => {
-        adminLoggedIn = false;
-        showNotification(T('notif_admin_logout'), 'bg-gray-500');
-        renderPage('home');
-    };
-
-    // --- LANGUAGE AND RTL CONTROL ---
-
-    window.switchLanguage = (lang) => {
-        currentLanguage = lang;
-        localStorage.setItem('mtshop_language', lang);
-
-        const htmlEl = document.documentElement;
-        htmlEl.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
-        currentLangDisplayEl.textContent = lang.toUpperCase();
-        document.title = T('app_title');
-
-        if (currentPage === 'admin-panel') {
-            renderAdminPanel();
-        } else {
-            renderPage(currentPage);
-        }
-    };
-
-    // --- MISC UTILS ---
-
-    window.copyUserId = () => {
-        const tempInput = document.createElement('textarea');
-        tempInput.value = userId;
-        document.body.appendChild(tempInput);
-        tempInput.select();
-        document.execCommand('copy');
-        document.body.removeChild(tempInput);
-        showNotification(T('notif_id_copied'), 'bg-gray-500');
-    };
-
-    window.scrollToProducts = () => {
-        const productsSection = document.getElementById('products');
-        if (productsSection) {
-            setTimeout(() => {
-                productsSection.scrollIntoView({ behavior: 'smooth' });
-            }, 10);
-        }
-    };
-  </script>
-
-  <!-- سكربت Supabase لتحميل المنتجات -->
-  <script type="module">
-    import { supabase } from './js/supabaseClient.js';
-
-    async function loadProducts() {
-        const { data, error } = await supabase.from('products').select('*');
-
-        if (error) {
-            console.error('خطأ في جلب البيانات:', error);
-            return;
-        }
-
-        const container = document.getElementById('products-list');
-        container.innerHTML = '';
-
-        data.forEach((product) => {
-            const card = document.createElement('div');
-            card.className = 'product-card';
-            card.innerHTML = `
-                <h3>${product.name}</h3>
-                <p>${product.description}</p>
-                <strong>${product.price} درهم</strong>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-<div id="products-list"></div>
-
-<script type="module">
-  import { loadProducts } from './js/supabaseClient.js';  <!-- هنا بدون js/ -->
-  document.addEventListener('DOMContentLoaded', loadProducts);
-</script>
-
-</body>
-</html>
-
