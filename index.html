@@ -1679,15 +1679,14 @@
         });
     }
 
-    document.addEventListener('DOMContentLoaded', loadProducts);
-  </script>
- <div id="products-list"></div>
+<div id="products-list"></div>
 
 <script type="module">
-    import { loadProducts } from './js/supabaseClient.js'
+  import { loadProducts } from './js/supabaseClient.js';
 
-    // تحميل المنتجات عند فتح الصفحة
-    loadProducts()
+  // تحميل المنتجات عند فتح الصفحة
+  document.addEventListener('DOMContentLoaded', loadProducts);
 </script>
 
 </body>
+</html>
