@@ -9,9 +9,12 @@
 <body>
 
 <div id="products-list"></div>
-
+    
 <script type="module">
-  import { loadProducts } from './supabaseClient.js';
+  import { loadProducts } from './supabaseClient.js'; // لا تضع js/ لأنه لا يوجد مجلد
+  document.addEventListener('DOMContentLoaded', loadProducts);
+</script>
+
 
   // تحميل المنتجات عند فتح الصفحة
   document.addEventListener('DOMContentLoaded', loadProducts);
