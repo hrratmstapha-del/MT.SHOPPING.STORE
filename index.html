@@ -1682,11 +1682,10 @@
 <div id="products-list"></div>
 
 <script type="module">
-  import { loadProducts } from './js/supabaseClient.js';
-
-  // تحميل المنتجات عند فتح الصفحة
+  import { loadProducts } from './supabaseClient.js';  <!-- هنا بدون js/ -->
   document.addEventListener('DOMContentLoaded', loadProducts);
 </script>
 
 </body>
 </html>
+
