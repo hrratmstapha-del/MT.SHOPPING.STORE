@@ -1706,17 +1706,15 @@
       }
   };
 
-  // --- تنفيذ كل شيء بعد تحميل الصفحة ---
-  document.addEventListener('DOMContentLoaded', () => {
-      loadProducts();
-      // إذا أردت: initializeFirebase();
-      // إذا أردت: switchLanguage(currentLanguage);
-  });
-</script>
+ <body>
+    <!-- Admin inputs -->
+    <input type="password" id="admin-pin" placeholder="أدخل PIN">
+    <button onclick="handleAdminLogin(event)">تسجيل الدخول</button>
 
-<!-- مكان عرض المنتجات -->
-<div id="products-list"></div>
-<script type="module" src="./js/main.js"></script>
+    <!-- مكان عرض المنتجات -->
+    <div id="products-list"></div>
 
+    <!-- استدعاء JS الرئيسي -->
+    <script type="module" src="./js/main.js"></script>
 </body>
 </html>
