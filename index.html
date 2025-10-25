@@ -1518,27 +1518,37 @@
         import { supabase } from './js/supabaseClient.js';
 
         // --- تحميل المنتجات ---
-        async function loadProducts() {
-            const { data, error } = await supabase.from('products').select('*');
-            if (error) {
-                console.error('خطأ في جلب البيانات:', error);
-                return;
-            }
+      async function loadProducts() {
+    const { data, error } = await supabase.from('products').select('*');
 
-            const container = document.getElementById('products-list');
-            container.innerHTML = '';
+    if (error) {
+        console.error('❌ خطأ في جلب البيانات من Supabase:', error.message);
+        alert('خطأ في الاتصال بقاعدة البيانات: ' + error.message);
+        return;
+    }
 
-            data.forEach((product) => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                card.innerHTML = `
-                    <h3>${product.name}</h3>
-                    <p>${product.description}</p>
-                    <strong>${product.price} درهم</strong>
-                `;
-                container.appendChild(card);
-            });
-        }
+    console.log('✅ البيانات:', data);
+
+    const container = document.getElementById('products-list');
+    container.innerHTML = '';
+
+    if (!data || data.length === 0) {
+        container.innerHTML = '<p>لا توجد منتجات حالياً.</p>';
+        return;
+    }
+
+    data.forEach((product) => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+            <h3>${product.name}</h3>
+            <p>${product.description || ''}</p>
+            <strong>${product.price} درهم</strong>
+        `;
+        container.appendChild(card);
+    });
+}
+
 
         // --- ADMIN LOGIN / LOGOUT ---
         window.handleAdminLogin = (event) => {
