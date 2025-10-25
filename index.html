@@ -484,11 +484,102 @@
                 'loading_init': 'تهيئة المتجر...',
             }
         };
+        <!-- داخل index.html بعد الكود الذي أرسلته -->
+<script type="module">
+    // --- Existing code remains unchanged above this point ---
+
+    // --- New Static Pages Content ---
+    const staticPages = {
+        'about-us': `
+            <div class="max-w-5xl mx-auto py-10 px-4">
+                <div class="grid md:grid-cols-2 gap-6 items-center">
+                    <div>
+                        <h2 class="text-3xl font-bold text-mt-primary mb-4">من نحن</h2>
+                        <p class="mb-4 text-gray-700">
+                            مرحبًا بكم في <strong>MT SHOP</strong>! نحن متجر إلكتروني متخصص في تقديم أفضل المنتجات بجودة عالية وخدمة عملاء ممتازة.
+                        </p>
+                        <p class="mb-4 text-gray-700">
+                            مهمتنا هي تسهيل تجربة التسوق وجعلها ممتعة وآمنة لجميع عملائنا، مع تقديم عروض مميزة ودعم متاح على مدار الساعة.
+                        </p>
+                    </div>
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1606813903042-55e2d28b8b0b?auto=format&fit=crop&w=600&q=80" alt="About Us" class="rounded-lg shadow-lg w-full">
+                    </div>
+                </div>
+            </div>
+        `,
+        'contact-us': `
+            <div class="max-w-5xl mx-auto py-10 px-4">
+                <div class="grid md:grid-cols-2 gap-6 items-center">
+                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                        <h2 class="text-3xl font-bold text-mt-primary mb-4">اتصل بنا</h2>
+                        <form id="contactForm" class="space-y-4">
+                            <input type="text" id="name" placeholder="اسمك" required class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-mt-primary">
+                            <input type="email" id="email" placeholder="البريد الإلكتروني" required class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-mt-primary">
+                            <input type="text" id="whatsapp" placeholder="رقم واتساب مثال: 212612345678" required class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-mt-primary">
+                            <textarea id="message" placeholder="رسالتك" required class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-mt-primary"></textarea>
+                            <button type="submit" class="w-full bg-mt-primary text-white py-3 rounded-md font-bold hover:bg-indigo-700 transition">إرسال</button>
+                        </form>
+                        <div id="status" class="mt-2 text-center"></div>
+                    </div>
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1591012911209-4c51d0adf1bb?auto=format&fit=crop&w=600&q=80" alt="Contact Us" class="rounded-lg shadow-lg w-full">
+                    </div>
+                </div>
+            </div>
+        `
+    };
+
+    // --- Function to render static pages ---
+    function renderStaticPage(page) {
+        if(staticPages[page]) {
+            appContentEl.innerHTML = staticPages[page];
+
+            // Attach WhatsApp validation if it's contact-us page
+            if(page === 'contact-us') {
+                const form = document.getElementById('contactForm');
+                const status = document.getElementById('status');
+
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const name = document.getElementById('name').value.trim();
+                    const email = document.getElementById('email').value.trim();
+                    const whatsapp = document.getElementById('whatsapp').value.trim();
+                    const message = document.getElementById('message').value.trim();
+
+                    const whatsappPattern = /^212\d{9}$/; // مثال للمغرب
+                    if(!whatsappPattern.test(whatsapp)) {
+                        status.innerHTML = 'الرجاء إدخال رقم واتساب صالح (مثال: 212612345678)';
+                        status.style.color = 'red';
+                        return;
+                    }
+
+                    const waLink = `https://wa.me/${whatsapp}?text=${encodeURIComponent('مرحبًا '+name+', '+message)}`;
+                    window.open(waLink, '_blank');
+
+                    status.innerHTML = 'تم فتح واتساب لإرسال الرسالة!';
+                    status.style.color = 'green';
+                    form.reset();
+                });
+            }
+        }
+    }
+
+    // --- Update navigation links to use new pages ---
+    document.getElementById('nav-about-link').onclick = () => renderStaticPage('about-us');
+    document.getElementById('nav-contact-link').onclick = () => renderStaticPage('contact-us');
+    document.getElementById('footer-about-us').onclick = () => renderStaticPage('about-us');
+    document.getElementById('footer-contact-us').onclick = () => renderStaticPage('contact-us');
+
+</script>
+
 
         /** Gets the translation for a key */
         window.T = (key) => { // Expose T globally for inline HTML event handlers
             return translations[currentLanguage][key] || key;
         };
+
+        
 
         // --- UTILITY FUNCTIONS ---
 
