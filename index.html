@@ -1220,62 +1220,34 @@
             `;
         };
         
-// --- ORDER MANAGEMENT (Admin) ---
+<!-- ==================== Admin Inputs ==================== -->
+<input type="password" id="admin-pin" placeholder="أدخل PIN" class="px-4 py-2 rounded border">
+<button onclick="handleAdminLogin(event)" class="px-4 py-2 bg-blue-500 text-white rounded">تسجيل الدخول</button>
 
-const renderOrderManagementPage = () => {
-    // Mock orders data for demonstration
-    const mockOrders = [
-        { id: 'ORD-001', userId: 'user-001', total: 49.98, status: T('shipped'), date: '2025-09-01' },
-        { id: 'ORD-002', userId: 'user-002', total: 125.00, status: T('processing'), date: '2025-09-05' },
-        { id: 'ORD-003', userId: 'user-001', total: 19.50, status: T('cancelled'), date: '2025-09-08' },
-    ];
+<!-- ==================== Order Management Page ==================== -->
+<div id="admin-orders" class="p-8 hidden">
+    <h3 class="text-3xl font-bold text-gray-800 mb-6" id="admin-orders-title">لوحة التحكم - الطلبات</h3>
+    <p class="text-gray-600 mb-8" id="admin-orders-note">هنا يمكنك متابعة جميع الطلبات الحالية وحالتها.</p>
 
-    const getStatusColor = (status) => {
-        if (status === T('shipped')) return 'bg-mt-green text-white';
-        if (status === T('processing')) return 'bg-mt-accent text-white';
-        if (status === T('cancelled')) return 'bg-red-500 text-white';
-        return 'bg-gray-400 text-white';
-    };
+    <div class="bg-white rounded-xl shadow-lg overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200" id="orders-table">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">رقم الطلب</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">معرف المستخدم</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">التاريخ</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">المجموع</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200" id="orders-body">
+                <!-- سيتم تحميل الطلبات هنا -->
+            </tbody>
+        </table>
+    </div>
+</div>
 
-    return `
-        <h3 class="text-3xl font-bold text-gray-800 mb-6">${T('admin_panel_title')} - ${T('admin_orders_heading')}</h3>
-        <p class="text-gray-600 mb-8">${T('admin_orders_note')}</p>
-
-        <div class="bg-white rounded-xl shadow-lg overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User ID</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    ${mockOrders.map(order => `
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${order.id}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs">${order.userId}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${order.date}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${formatPrice(order.total)}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}">
-                                    ${order.status}
-                                </span>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        </div>
-    `;
-};
-<!-- Admin inputs -->
-<input type="password" id="admin-pin" placeholder="أدخل PIN">
-<button onclick="handleAdminLogin(event)">تسجيل الدخول</button>
-
-<!-- مكان عرض المنتجات -->
+<!-- ==================== مكان عرض المنتجات ==================== -->
 <div id="products-list"></div>
 
 <script type="module">
@@ -1303,7 +1275,7 @@ let unsubscribeProducts, unsubscribeCart;
 const initializeFirebase = async () => {
     if (!firebaseConfig) {
         console.error("Firebase config is missing.");
-        showNotification(T('notif_init_failed') + ' No config found.', 'bg-red-500');
+        showNotification('Failed to initialize Firebase: No config found.', 'bg-red-500');
         return;
     }
     try {
@@ -1339,8 +1311,8 @@ const initializeFirebase = async () => {
     } catch (error) {
         console.error("Initialization error:", error);
         const loadingEl = document.getElementById('loading-text');
-        if (loadingEl) loadingEl.textContent = T('notif_init_failed') + error.message;
-        showNotification(T('notif_init_failed') + error.message, 'bg-red-500');
+        if (loadingEl) loadingEl.textContent = 'Failed to initialize Firebase: ' + error.message;
+        showNotification('Failed to initialize Firebase: ' + error.message, 'bg-red-500');
     }
 };
 
@@ -1371,9 +1343,100 @@ const setupListeners = async () => {
             const product = currentProducts.find(p => p.id === item.productId);
             if (product) cartItems.push({ id: doc.id, ...item, product });
         });
-        cartCountEl.textContent = cartItems.length;
+        if (cartCountEl) cartCountEl.textContent = cartItems.length;
         if (currentPage === 'cart') renderCartPage();
     }, error => console.error("Error fetching cart:", error));
+};
+
+// --- ORDER MANAGEMENT (Admin) ---
+const mockOrders = [
+    { id: 'ORD-001', userId: 'user-001', total: 49.98, status: 'تم الشحن', date: '2025-09-01' },
+    { id: 'ORD-002', userId: 'user-002', total: 125.00, status: 'قيد المعالجة', date: '2025-09-05' },
+    { id: 'ORD-003', userId: 'user-001', total: 19.50, status: 'ملغى', date: '2025-09-08' }
+];
+
+const getStatusColor = (status) => {
+    switch(status) {
+        case 'تم الشحن': return 'bg-green-500 text-white';
+        case 'قيد المعالجة': return 'bg-yellow-500 text-white';
+        case 'ملغى': return 'bg-red-500 text-white';
+        default: return 'bg-gray-400 text-white';
+    }
+};
+
+const renderOrderManagementPage = (orders = mockOrders) => {
+    const ordersContainer = document.getElementById('orders-body');
+    if (!ordersContainer) return;
+    ordersContainer.innerHTML = '';
+
+    orders.forEach(order => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${order.id}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs">${order.userId}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${order.date}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${order.total.toFixed(2)}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}">
+                    ${order.status}
+                </span>
+            </td>
+        `;
+        ordersContainer.appendChild(row);
+    });
+    document.getElementById('admin-orders').classList.remove('hidden');
+};
+
+// --- ADMIN LOGIN / LOGOUT ---
+window.handleAdminLogin = (event) => {
+    event.preventDefault();
+    const pin = document.getElementById('admin-pin').value;
+    if (pin === ADMIN_PIN) {
+        adminLoggedIn = true;
+        showNotification('تم تسجيل الدخول كمسؤول');
+        renderOrderManagementPage();
+    } else {
+        showNotification('PIN غير صحيح', 'bg-red-500');
+    }
+};
+
+window.handleAdminLogout = () => {
+    adminLoggedIn = false;
+    showNotification('تم تسجيل الخروج من لوحة المسؤول', 'bg-gray-500');
+    document.getElementById('admin-orders').classList.add('hidden');
+    renderPage('home');
+};
+
+// --- RTL / LANGUAGE SWITCHING ---
+window.switchLanguage = (lang) => {
+    currentLanguage = lang;
+    localStorage.setItem('mtshop_language', lang);
+    document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+    if (currentLangDisplayEl) currentLangDisplayEl.textContent = lang.toUpperCase();
+};
+
+// --- CART FUNCTIONS ---
+window.addToCart = async (productId) => {
+    if (!isAuthReady || !db) return;
+    const product = currentProducts.find(p => p.id === productId);
+    if (!product) return;
+
+    try {
+        const cartRef = collection(db, `/artifacts/${appId}/users/${userId}/cart`);
+        const existingItem = cartItems.find(item => item.productId === productId);
+        if (existingItem) {
+            await updateDoc(doc(cartRef, existingItem.id), {
+                quantity: existingItem.quantity + 1,
+                updatedAt: serverTimestamp()
+            });
+        } else {
+            await addDoc(cartRef, { productId, quantity: 1, addedAt: serverTimestamp() });
+        }
+        showNotification(`"${product.name}" تمت إضافته للسلة`);
+    } catch (e) {
+        console.error(e);
+        showNotification('حدث خطأ أثناء إضافة المنتج للسلة: ' + e.message, 'bg-red-500');
+    }
 };
 
 // --- LOAD PRODUCTS FROM SUPABASE ---
@@ -1395,12 +1458,12 @@ async function loadProducts() {
 
         data.forEach(product => {
             const card = document.createElement('div');
-            card.className = 'product-card';
+            card.className = 'product-card bg-white shadow p-4 rounded mb-4';
             card.innerHTML = `
-                <h3>${product.name}</h3>
-                <p>${product.description || ''}</p>
+                <h3 class="font-bold">${product.name}</h3>
+                <p class="text-gray-600">${product.description || ''}</p>
                 <strong>${product.price} درهم</strong>
-                <button onclick="addToCart('${product.id}')">أضف للسلة</button>
+                <button onclick="addToCart('${product.id}')" class="mt-2 px-2 py-1 bg-blue-500 text-white rounded">أضف للسلة</button>
             `;
             container.appendChild(card);
         });
@@ -1409,77 +1472,7 @@ async function loadProducts() {
     }
 }
 
-// --- ADMIN LOGIN / LOGOUT ---
-window.handleAdminLogin = (event) => {
-    event.preventDefault();
-    const pin = document.getElementById('admin-pin').value;
-    if (pin === ADMIN_PIN) {
-        adminLoggedIn = true;
-        showNotification(T('notif_admin_granted'));
-        renderPage('admin-panel');
-    } else {
-        showNotification(T('notif_admin_invalid'), 'bg-red-500');
-    }
-};
-
-window.handleAdminLogout = () => {
-    adminLoggedIn = false;
-    showNotification(T('notif_admin_logout'), 'bg-gray-500');
-    renderPage('home');
-};
-
-// --- RTL / LANGUAGE SWITCHING ---
-window.switchLanguage = (lang) => {
-    currentLanguage = lang;
-    localStorage.setItem('mtshop_language', lang);
-    document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
-    currentLangDisplayEl.textContent = lang.toUpperCase();
-    document.title = T('app_title');
-    if (currentPage === 'admin-panel') renderAdminPanel();
-    else renderPage(currentPage);
-};
-
-// --- MISC UTILS ---
-window.copyUserId = () => {
-    const tempInput = document.createElement('textarea');
-    tempInput.value = userId;
-    document.body.appendChild(tempInput);
-    tempInput.select();
-    document.execCommand('copy');
-    document.body.removeChild(tempInput);
-    showNotification(T('notif_id_copied'), 'bg-gray-500');
-};
-
-window.scrollToProducts = () => {
-    const productsSection = document.getElementById('products');
-    if (productsSection) setTimeout(() => productsSection.scrollIntoView({ behavior: 'smooth' }), 10);
-};
-
-// --- CART FUNCTIONS ---
-window.addToCart = async (productId) => {
-    if (!isAuthReady || !db) return;
-    const product = currentProducts.find(p => p.id === productId);
-    if (!product) return;
-
-    try {
-        const cartRef = collection(db, `/artifacts/${appId}/users/${userId}/cart`);
-        const existingItem = cartItems.find(item => item.productId === productId);
-        if (existingItem) {
-            await updateDoc(doc(cartRef, existingItem.id), {
-                quantity: existingItem.quantity + 1,
-                updatedAt: serverTimestamp()
-            });
-        } else {
-            await addDoc(cartRef, { productId, quantity: 1, addedAt: serverTimestamp() });
-        }
-        showNotification(`"${product.name}" ${T('notif_item_added')}`);
-    } catch (e) {
-        console.error(e);
-        showNotification(T('notif_cart_error') + e.message, 'bg-red-500');
-    }
-};
-
-// --- LOAD PRODUCTS AUTOMATICALLY ---
+// --- LOAD INITIALIZATION ---
 window.addEventListener('DOMContentLoaded', () => {
     initializeFirebase().then(() => loadProducts());
 });
