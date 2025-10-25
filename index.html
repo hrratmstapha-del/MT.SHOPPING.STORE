@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+l<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
@@ -1507,24 +1507,25 @@
 </head>
 <body>
 
-    <!-- Admin inputs -->
-    <input type="password" id="admin-pin" placeholder="أدخل PIN">
-    <button onclick="handleAdminLogin(event)">تسجيل الدخول</button>
+<!-- Admin inputs -->
+<input type="password" id="admin-pin" placeholder="أدخل PIN">
+<button onclick="handleAdminLogin(event)">تسجيل الدخول</button>
 
-    <!-- مكان عرض المنتجات -->
-    <div id="products-list"></div>
+<!-- مكان عرض المنتجات -->
+<div id="products-list"></div>
 
-    <script type="module">
-        import { supabase } from './js/supabaseClient.js';
+<!-- سكربت تحميل المنتجات والإدارة -->
+<script type="module">
+  import { supabase } from './js/supabaseClient.js';
 
-        // --- تحميل المنتجات ---
-      async function loadProducts() {
+  // --- تحميل المنتجات ---
+  async function loadProducts() {
     const { data, error } = await supabase.from('products').select('*');
 
     if (error) {
-        console.error('❌ خطأ في جلب البيانات من Supabase:', error.message);
-        alert('خطأ في الاتصال بقاعدة البيانات: ' + error.message);
-        return;
+      console.error('❌ خطأ في جلب البيانات من Supabase:', error.message);
+      alert('خطأ في الاتصال بقاعدة البيانات: ' + error.message);
+      return;
     }
 
     console.log('✅ البيانات:', data);
@@ -1533,58 +1534,64 @@
     container.innerHTML = '';
 
     if (!data || data.length === 0) {
-        container.innerHTML = '<p>لا توجد منتجات حالياً.</p>';
-        return;
+      container.innerHTML = '<p>لا توجد منتجات حالياً.</p>';
+      return;
     }
 
     data.forEach((product) => {
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        card.innerHTML = `
-            <h3>${product.name}</h3>
-            <p>${product.description || ''}</p>
-            <strong>${product.price} درهم</strong>
-        `;
-        container.appendChild(card);
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.innerHTML = `
+        <h3>${product.name}</h3>
+        <p>${product.description || ''}</p>
+        <strong>${product.price} درهم</strong>
+      `;
+      container.appendChild(card);
     });
-}
+  }
 
+  // --- ADMIN LOGIN / LOGOUT ---
+  window.handleAdminLogin = (event) => {
+    event.preventDefault();
+    const pin = document.getElementById('admin-pin').value;
+    if (pin === ADMIN_PIN) {
+      adminLoggedIn = true;
+      showNotification(T('notif_admin_granted'));
+      renderPage('admin-panel');
+    } else {
+      showNotification(T('notif_admin_invalid'), 'bg-red-500');
+    }
+  };
 
-        // --- ADMIN LOGIN / LOGOUT ---
-        window.handleAdminLogin = (event) => {
-            event.preventDefault();
-            const pin = document.getElementById('admin-pin').value;
-            if (pin === ADMIN_PIN) {
-                adminLoggedIn = true;
-                showNotification(T('notif_admin_granted'));
-                renderPage('admin-panel');
-            } else {
-                showNotification(T('notif_admin_invalid'), 'bg-red-500');
-            }
-        };
+  window.handleAdminLogout = () => {
+    adminLoggedIn = false;
+    showNotification(T('notif_admin_logout'), 'bg-gray-500');
+    renderPage('home');
+  };
 
-        window.handleAdminLogout = () => {
-            adminLoggedIn = false;
-            showNotification(T('notif_admin_logout'), 'bg-gray-500');
-            renderPage('home');
-        };
+  // --- LANGUAGE / RTL CONTROL ---
+  window.switchLanguage = (lang) => {
+    currentLanguage = lang;
+    localStorage.setItem('mtshop_language', lang);
 
-        // --- LANGUAGE / RTL CONTROL ---
-        window.switchLanguage = (lang) => {
-            currentLanguage = lang;
-            localStorage.setItem('mtshop_language', lang);
+    const htmlEl = document.documentElement;
+    htmlEl.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+    currentLangDisplayEl.textContent = lang.toUpperCase();
+    document.title = T('app_title');
 
-            const htmlEl = document.documentElement;
-            htmlEl.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
-            currentLangDisplayEl.textContent = lang.toUpperCase();
-            document.title = T('app_title');
+    if (currentPage === 'admin-panel') {
+      renderAdminPanel();
+    } else {
+      renderPage(currentPage);
+    }
+  };
 
-            if (currentPage === 'admin-panel') {
-                renderAdminPanel();
-            } else {
-                renderPage(currentPage);
-            }
-        };
+  // تحميل المنتجات عند بدء الصفحة
+  loadProducts();
+</script>
+
+<!-- استدعاء ملف الجافاسكربت الرئيسي -->
+<script type="module" src="./js/main.js"></script>
 
         // --- MISC UTILS ---
         window.copyUserId = () => {
