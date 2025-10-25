@@ -1220,381 +1220,58 @@
             `;
         };
         
-        const renderOrderManagementPage = () => {
-            // Mock orders data for demonstration
-            const mockOrders = [
-                { id: 'ORD-001', userId: 'user-001', total: 49.98, status: T('shipped'), date: '2025-09-01' },
-                { id: 'ORD-002', userId: 'user-002', total: 125.00, status: T('processing'), date: '2025-09-05' },
-                { id: 'ORD-003', userId: 'user-001', total: 19.50, status: T('cancelled'), date: '2025-09-08' },
-            ];
+// --- ORDER MANAGEMENT (Admin) ---
 
-            const getStatusColor = (status) => {
-                if (status === T('shipped')) return 'bg-mt-green text-white';
-                if (status === T('processing')) return 'bg-mt-accent text-white';
-                if (status === T('cancelled')) return 'bg-red-500 text-white';
-                return 'bg-gray-400 text-white';
-            };
+const renderOrderManagementPage = () => {
+    // Mock orders data for demonstration
+    const mockOrders = [
+        { id: 'ORD-001', userId: 'user-001', total: 49.98, status: T('shipped'), date: '2025-09-01' },
+        { id: 'ORD-002', userId: 'user-002', total: 125.00, status: T('processing'), date: '2025-09-05' },
+        { id: 'ORD-003', userId: 'user-001', total: 19.50, status: T('cancelled'), date: '2025-09-08' },
+    ];
 
-            return `
-                <h3 class="text-3xl font-bold text-gray-800 mb-6">${T('admin_panel_title')} - ${T('admin_orders_heading')}</h3>
-                <p class="text-gray-600 mb-8">${T('admin_orders_note')}</p>
+    const getStatusColor = (status) => {
+        if (status === T('shipped')) return 'bg-mt-green text-white';
+        if (status === T('processing')) return 'bg-mt-accent text-white';
+        if (status === T('cancelled')) return 'bg-red-500 text-white';
+        return 'bg-gray-400 text-white';
+    };
 
-                <div class="bg-white rounded-xl shadow-lg overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User ID</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            ${mockOrders.map(order => `
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${order.id}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs">${order.userId}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${order.date}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${formatPrice(order.total)}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}">
-                                            ${order.status}
-                                        </span>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        };
+    return `
+        <h3 class="text-3xl font-bold text-gray-800 mb-6">${T('admin_panel_title')} - ${T('admin_orders_heading')}</h3>
+        <p class="text-gray-600 mb-8">${T('admin_orders_note')}</p>
 
-        // --- AUTH & INITIALIZATION ---
-
-        const initializeFirebase = async () => {
-            if (!firebaseConfig) {
-                console.error("Firebase config is missing.");
-                showNotification(T('notif_init_failed') + ' No config found.', 'bg-red-500');
-                return;
-            }
-            try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                
-                // Set persistence to in-memory since we rely on the initial auth token
-                await setPersistence(auth, inMemoryPersistence);
-
-                await new Promise(resolve => {
-                    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-                        if (user) {
-                            userId = user.uid;
-                        } else {
-                            if (initialAuthToken) {
-                                await signInWithCustomToken(auth, initialAuthToken).catch(e => {
-                                    console.error("Custom token sign-in failed. Falling back to anonymous.", e);
-                                    signInAnonymously(auth);
-                                });
-                            } else {
-                                await signInAnonymously(auth);
-                            }
-                        }
-                        isAuthReady = true;
-                        unsubscribe(); 
-                        resolve();
-                    });
-                });
-
-                console.log("Firebase initialized. User ID:", userId);
-                await setupListeners();
-                renderPage(currentPage); // Start rendering the app
-
-            } catch (error) {
-                console.error("Initialization error:", error);
-                document.getElementById('loading-text').textContent = T('notif_init_failed') + error.message;
-                showNotification(T('notif_init_failed') + error.message, 'bg-red-500');
-            }
-        };
-
-        // --- FIRESTORE LISTENERS ---
-
-        const setupListeners = async () => {
-            if (!isAuthReady || !db) {
-                console.warn(T('notif_wait_auth'));
-                return;
-            }
-            unsubscribeAll(); // Clear old listeners
-
-            // 1. Products Collection (Public Data)
-            const productsPath = `/artifacts/${appId}/public/data/products`;
-            const productsQuery = query(collection(db, productsPath));
-            
-            unsubscribeProducts = onSnapshot(productsQuery, (snapshot) => {
-                currentProducts = [];
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    currentProducts.push({ id: doc.id, ...data });
-                });
-                renderProductList(currentProducts);
-                // If in admin mode, re-render product table
-                if (adminLoggedIn && adminPage === 'products') {
-                    renderAdminPanelContent();
-                }
-            }, (error) => {
-                console.error("Error fetching products:", error);
-            });
-
-            // 2. Cart Collection (Private Data)
-            const cartPath = `/artifacts/${appId}/users/${userId}/cart`;
-            const cartQuery = query(collection(db, cartPath));
-            
-            unsubscribeCart = onSnapshot(cartQuery, (snapshot) => {
-                const newCartItems = [];
-                snapshot.forEach(doc => {
-                    const item = doc.data();
-                    const product = currentProducts.find(p => p.id === item.productId);
-                    if (product) {
-                        newCartItems.push({ id: doc.id, ...item, product });
-                    }
-                });
-                cartItems = newCartItems;
-                cartCountEl.textContent = cartItems.length;
-                
-                // Only re-render cart page if currently active
-                if (currentPage === 'cart') {
-                    renderCartPage();
-                }
-            }, (error) => {
-                console.error("Error fetching cart:", error);
-            });
-        };
-
-        // --- PRODUCT MANAGEMENT (Admin) ---
-
-        window.handleProductSubmit = async (event) => {
-            event.preventDefault();
-            if (!adminLoggedIn || !db) return;
-
-            const form = event.target;
-            const productId = form.elements['product-id'].value;
-            const name = form.elements['product-name'].value;
-            const price = parseFloat(form.elements['product-price'].value);
-            const salePriceValue = form.elements['product-sale-price'].value;
-            const imageUrl = form.elements['product-image-url'].value;
-            const description = form.elements['product-description'].value;
-
-            const newProduct = {
-                name,
-                price,
-                salePrice: salePriceValue ? parseFloat(salePriceValue) : null,
-                imageUrl,
-                description,
-                createdAt: serverTimestamp()
-            };
-
-            try {
-                const productsRef = collection(db, `/artifacts/${appId}/public/data/products`);
-                if (productId) {
-                    await setDoc(doc(productsRef, productId), newProduct, { merge: true });
-                    showNotification(T('notif_product_updated'));
-                } else {
-                    await addDoc(productsRef, newProduct);
-                    showNotification(T('notif_product_added'));
-                }
-                form.reset();
-                editingProduct = null;
-                renderAdminPanelContent();
-            } catch (e) {
-                console.error(T('notif_saving_error'), e);
-                showNotification(T('notif_saving_error') + e.message, 'bg-red-500');
-            }
-        };
-
-        window.startEditProduct = (productId) => {
-            editingProduct = currentProducts.find(p => p.id === productId);
-            if (!editingProduct) {
-                showNotification(T('notif_product_not_found'), 'bg-red-500');
-                return;
-            }
-            setEditingProduct(editingProduct);
-        };
-
-        const setEditingProduct = (product) => {
-            document.getElementById('product-form-title').textContent = T('admin_edit_product');
-            document.getElementById('product-submit-btn').textContent = T('admin_update_product');
-            document.getElementById('product-cancel-btn').classList.remove('hidden');
-
-            document.getElementById('product-id').value = product.id;
-            document.getElementById('product-name').value = product.name;
-            document.getElementById('product-price').value = product.price;
-            document.getElementById('product-sale-price').value = product.salePrice || '';
-            document.getElementById('product-image-url').value = product.imageUrl || '';
-            document.getElementById('product-description').value = product.description || '';
-        };
-
-        window.cancelEdit = () => {
-            editingProduct = null;
-            document.getElementById('product-form').reset();
-            document.getElementById('product-form-title').textContent = T('admin_add_new_product');
-            document.getElementById('product-submit-btn').textContent = T('admin_add_new_product');
-            document.getElementById('product-cancel-btn').classList.add('hidden');
-        };
-        
-        window.showDeleteProductModal = (productId) => {
-            const productToDelete = currentProducts.find(p => p.id === productId);
-            if (!productToDelete) return;
-
-            showConfirmationModal('Remove Item', `Are you sure you want to delete product: "${productToDelete.name}"? This action cannot be undone.`, () => {
-                deleteProduct(productId);
-            });
-        };
-
-        const deleteProduct = async (productId) => {
-            if (!adminLoggedIn || !db) return;
-            try {
-                await deleteDoc(doc(db, `/artifacts/${appId}/public/data/products`, productId));
-                showNotification(T('notif_product_deleted'));
-                // Check if the deleted product was being edited
-                if (editingProduct && editingProduct.id === productId) {
-                    cancelEdit();
-                }
-            } catch (e) {
-                console.error(T('notif_deleting_error'), e);
-                showNotification(T('notif_deleting_error') + e.message, 'bg-red-500');
-            }
-        };
-
-        // --- CART MANAGEMENT (Client) ---
-
-        window.addToCart = async (productId) => {
-            if (!isAuthReady || !db) {
-                 showNotification(T('notif_wait_auth'), 'bg-gray-500');
-                return;
-            }
-            const product = currentProducts.find(p => p.id === productId);
-            if (!product) {
-                showNotification(T('notif_product_not_found'), 'bg-red-500');
-                return;
-            }
-
-            try {
-                const cartRef = collection(db, `/artifacts/${appId}/users/${userId}/cart`);
-                
-                // Check if item already exists
-                const existingItem = cartItems.find(item => item.productId === productId);
-
-                if (existingItem) {
-                    const newQuantity = existingItem.quantity + 1;
-                    await updateDoc(doc(cartRef, existingItem.id), {
-                        quantity: newQuantity,
-                        updatedAt: serverTimestamp()
-                    });
-                } else {
-                    await addDoc(cartRef, {
-                        productId: productId,
-                        quantity: 1,
-                        addedAt: serverTimestamp()
-                    });
-                }
-                showNotification(`"${product.name}" ${T('notif_item_added')}`);
-            } catch (e) {
-                console.error(T('notif_cart_error'), e);
-                showNotification(T('notif_cart_error') + e.message, 'bg-red-500');
-            }
-        };
-
-        window.updateCartItemQuantity = async (cartItemId, change) => {
-            const item = cartItems.find(i => i.id === cartItemId);
-            if (!item) return;
-
-            const newQuantity = item.quantity + change;
-            
-            if (newQuantity <= 0) {
-                // If quantity is zero or less, show remove modal
-                showRemoveModal(cartItemId);
-                return;
-            }
-            
-            try {
-                const cartItemRef = doc(db, `/artifacts/${appId}/users/${userId}/cart`, cartItemId);
-                await updateDoc(cartItemRef, {
-                    quantity: newQuantity,
-                    updatedAt: serverTimestamp()
-                });
-            } catch (e) {
-                console.error(T('cart_update_error'), e);
-                showNotification(T('cart_update_error') + e.message, 'bg-red-500');
-            }
-        };
-
-        window.updateCartItemQuantityByInput = async (cartItemId, quantityValue) => {
-             const newQuantity = parseInt(quantityValue, 10);
-            if (isNaN(newQuantity) || newQuantity < 1) {
-                showNotification("Quantity must be at least 1.", 'bg-red-500');
-                renderCartPage(); // Re-render to restore previous quantity
-                return;
-            }
-            
-            const item = cartItems.find(i => i.id === cartItemId);
-            if (!item) return;
-
-             try {
-                const cartItemRef = doc(db, `/artifacts/${appId}/users/${userId}/cart`, cartItemId);
-                await updateDoc(cartItemRef, {
-                    quantity: newQuantity,
-                    updatedAt: serverTimestamp()
-                });
-            } catch (e) {
-                console.error(T('cart_update_error'), e);
-                showNotification(T('cart_update_error') + e.message, 'bg-red-500');
-            }
-        };
-
-        window.showRemoveModal = (cartItemId) => {
-            const item = cartItems.find(i => i.id === cartItemId);
-            if (!item) return;
-
-            showConfirmationModal('remove_item_title', T('remove_item_msg'), () => {
-                removeItemFromCart(cartItemId, item.product.name);
-            });
-        };
-
-        const removeItemFromCart = async (cartItemId, productName) => {
-            if (!isAuthReady || !db) return;
-            try {
-                await deleteDoc(doc(db, `/artifacts/${appId}/users/${userId}/cart`, cartItemId));
-                showNotification(`"${productName}" ${T('notif_item_removed')}`);
-            } catch (e) {
-                console.error(T('notif_removing_error'), e);
-                showNotification(T('notif_removing_error') + e.message, 'bg-red-500');
-            }
-        };
-
-        window.showClearCartModal = () => {
-             if (cartItems.length === 0) {
-                 showNotification(T('cart_empty'), 'bg-gray-500');
-                 return;
-             }
-             showConfirmationModal('cart_clear_confirm_title', T('cart_clear_confirm_msg'), clearCart);
-        };
-        
-        const clearCart = async () => {
-            if (!isAuthReady || !db) return;
-            try {
-                const deletePromises = cartItems.map(item => 
-                    deleteDoc(doc(db, `/artifacts/${appId}/users/${userId}/cart`, item.id))
-                );
-                await Promise.all(deletePromises);
-                showNotification(T('cart_cleared_success'));
-            } catch (e) {
-                console.error(T('cart_cleared_error'), e);
-                showNotification(T('cart_cleared_error') + e.message, 'bg-red-500');
-            }
-        };
-        
-
-   <!-- Admin inputs -->
+        <div class="bg-white rounded-xl shadow-lg overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    ${mockOrders.map(order => `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${order.id}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs">${order.userId}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${order.date}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${formatPrice(order.total)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}">
+                                    ${order.status}
+                                </span>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+};
+<!-- Admin inputs -->
 <input type="password" id="admin-pin" placeholder="أدخل PIN">
 <button onclick="handleAdminLogin(event)">تسجيل الدخول</button>
 
@@ -1602,32 +1279,104 @@
 <div id="products-list"></div>
 
 <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, addDoc, deleteDoc, onSnapshot, query, serverTimestamp, updateDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 import { supabase } from './js/supabaseClient.js';
 
-// --- CART FUNCTIONS ---
-const clearCart = async () => {
-    if (!isAuthReady || !db) return;
-    try {
-        const deletePromises = cartItems.map(item =>
-            deleteDoc(doc(db, `/artifacts/${appId}/users/${userId}/cart`, item.id))
-        );
-        await Promise.all(deletePromises);
-        showNotification(T('cart_cleared_success'));
-    } catch (e) {
-        console.error(T('cart_cleared_error'), e);
-        showNotification(T('cart_cleared_error') + e.message, 'bg-red-500');
-    }
-};
+// --- VARIABLES ---
+let app, db, auth, userId;
+let isAuthReady = false;
+let currentProducts = [];
+let cartItems = [];
+let adminLoggedIn = false;
+let editingProduct = null;
+const ADMIN_PIN = "1234";
+const appId = "myAppId";
+const currentPage = 'home';
+const cartCountEl = document.getElementById('cart-count');
+const currentLangDisplayEl = document.getElementById('current-lang');
+let currentLanguage = 'ar';
+let unsubscribeProducts, unsubscribeCart;
 
-window.showClearCartModal = () => {
-    if (cartItems.length === 0) {
-        showNotification(T('cart_empty'), 'bg-gray-500');
+// --- AUTH & INITIALIZATION ---
+const initializeFirebase = async () => {
+    if (!firebaseConfig) {
+        console.error("Firebase config is missing.");
+        showNotification(T('notif_init_failed') + ' No config found.', 'bg-red-500');
         return;
     }
-    showConfirmationModal('cart_clear_confirm_title', T('cart_clear_confirm_msg'), clearCart);
+    try {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        await setPersistence(auth, inMemoryPersistence);
+
+        await new Promise(resolve => {
+            const unsubscribe = onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                } else {
+                    if (typeof initialAuthToken !== 'undefined' && initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken).catch(e => {
+                            console.error("Custom token sign-in failed. Falling back to anonymous.", e);
+                            signInAnonymously(auth);
+                        });
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                }
+                isAuthReady = true;
+                unsubscribe();
+                resolve();
+            });
+        });
+
+        console.log("Firebase initialized. User ID:", userId);
+        await setupListeners();
+        renderPage(currentPage);
+
+    } catch (error) {
+        console.error("Initialization error:", error);
+        const loadingEl = document.getElementById('loading-text');
+        if (loadingEl) loadingEl.textContent = T('notif_init_failed') + error.message;
+        showNotification(T('notif_init_failed') + error.message, 'bg-red-500');
+    }
 };
 
-// --- تحميل المنتجات ---
+// --- FIRESTORE LISTENERS ---
+const setupListeners = async () => {
+    if (!isAuthReady || !db) return;
+
+    if (unsubscribeProducts) unsubscribeProducts();
+    if (unsubscribeCart) unsubscribeCart();
+
+    // Products
+    const productsPath = `/artifacts/${appId}/public/data/products`;
+    const productsQuery = query(collection(db, productsPath));
+    unsubscribeProducts = onSnapshot(productsQuery, snapshot => {
+        currentProducts = [];
+        snapshot.forEach(doc => currentProducts.push({ id: doc.id, ...doc.data() }));
+        renderProductList(currentProducts);
+        if (adminLoggedIn && currentPage === 'admin-panel') renderAdminPanelContent();
+    }, error => console.error("Error fetching products:", error));
+
+    // Cart
+    const cartPath = `/artifacts/${appId}/users/${userId}/cart`;
+    const cartQuery = query(collection(db, cartPath));
+    unsubscribeCart = onSnapshot(cartQuery, snapshot => {
+        cartItems = [];
+        snapshot.forEach(doc => {
+            const item = doc.data();
+            const product = currentProducts.find(p => p.id === item.productId);
+            if (product) cartItems.push({ id: doc.id, ...item, product });
+        });
+        cartCountEl.textContent = cartItems.length;
+        if (currentPage === 'cart') renderCartPage();
+    }, error => console.error("Error fetching cart:", error));
+};
+
+// --- LOAD PRODUCTS FROM SUPABASE ---
 async function loadProducts() {
     try {
         const { data, error } = await supabase.from('products').select('*');
@@ -1639,19 +1388,19 @@ async function loadProducts() {
 
         const container = document.getElementById('products-list');
         container.innerHTML = '';
-
         if (!data || data.length === 0) {
             container.innerHTML = '<p>لا توجد منتجات حالياً.</p>';
             return;
         }
 
-        data.forEach((product) => {
+        data.forEach(product => {
             const card = document.createElement('div');
             card.className = 'product-card';
             card.innerHTML = `
                 <h3>${product.name}</h3>
                 <p>${product.description || ''}</p>
                 <strong>${product.price} درهم</strong>
+                <button onclick="addToCart('${product.id}')">أضف للسلة</button>
             `;
             container.appendChild(card);
         });
@@ -1679,21 +1428,15 @@ window.handleAdminLogout = () => {
     renderPage('home');
 };
 
-// --- LANGUAGE / RTL CONTROL ---
+// --- RTL / LANGUAGE SWITCHING ---
 window.switchLanguage = (lang) => {
     currentLanguage = lang;
     localStorage.setItem('mtshop_language', lang);
-
-    const htmlEl = document.documentElement;
-    htmlEl.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+    document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
     currentLangDisplayEl.textContent = lang.toUpperCase();
     document.title = T('app_title');
-
-    if (currentPage === 'admin-panel') {
-        renderAdminPanel();
-    } else {
-        renderPage(currentPage);
-    }
+    if (currentPage === 'admin-panel') renderAdminPanel();
+    else renderPage(currentPage);
 };
 
 // --- MISC UTILS ---
@@ -1709,19 +1452,35 @@ window.copyUserId = () => {
 
 window.scrollToProducts = () => {
     const productsSection = document.getElementById('products');
-    if (productsSection) {
-        setTimeout(() => {
-            productsSection.scrollIntoView({ behavior: 'smooth' });
-        }, 10);
+    if (productsSection) setTimeout(() => productsSection.scrollIntoView({ behavior: 'smooth' }), 10);
+};
+
+// --- CART FUNCTIONS ---
+window.addToCart = async (productId) => {
+    if (!isAuthReady || !db) return;
+    const product = currentProducts.find(p => p.id === productId);
+    if (!product) return;
+
+    try {
+        const cartRef = collection(db, `/artifacts/${appId}/users/${userId}/cart`);
+        const existingItem = cartItems.find(item => item.productId === productId);
+        if (existingItem) {
+            await updateDoc(doc(cartRef, existingItem.id), {
+                quantity: existingItem.quantity + 1,
+                updatedAt: serverTimestamp()
+            });
+        } else {
+            await addDoc(cartRef, { productId, quantity: 1, addedAt: serverTimestamp() });
+        }
+        showNotification(`"${product.name}" ${T('notif_item_added')}`);
+    } catch (e) {
+        console.error(e);
+        showNotification(T('notif_cart_error') + e.message, 'bg-red-500');
     }
 };
 
-<script type="module">
-    import { loadProducts } from './js/supabaseClient.js';
-
-    // تحميل المنتجات تلقائياً عند فتح الصفحة
-    window.addEventListener('DOMContentLoaded', () => {
-        loadProducts();
-    });
+// --- LOAD PRODUCTS AUTOMATICALLY ---
+window.addEventListener('DOMContentLoaded', () => {
+    initializeFirebase().then(() => loadProducts());
+});
 </script>
-
