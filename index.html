@@ -1510,74 +1510,69 @@ l<!DOCTYPE html>
 <body>
 
     <!-- Admin inputs -->
-    <input type="password" id="admin-pin" placeholder="أدخل PIN">
-    <button onclick="handleAdminLogin(event)">تسجيل الدخول</button>
+<input type="password" id="admin-pin" placeholder="أدخل PIN">
+<button onclick="handleAdminLogin(event)">تسجيل الدخول</button>
 
-    <!-- مكان عرض المنتجات -->
-    <div id="products-list"></div>
+<!-- مكان عرض المنتجات -->
+<div id="products-list"></div>
 
-    <!-- استدعاء JS الرئيسي -->
-    <script type="module" src="./js/main.js"></script>
-</body>
-</html>
-
-<!-- سكربت تحميل المنتجات والإدارة -->
 <script type="module">
-  import { supabase } from './js/supabaseClient.js';
+import { supabase } from './js/supabaseClient.js';
 
-  // --- تحميل المنتجات ---
-  async function loadProducts() {
-    const { data, error } = await supabase.from('products').select('*');
+// --- تحميل المنتجات ---
+async function loadProducts() {
+    try {
+        const { data, error } = await supabase.from('products').select('*');
+        if (error) {
+            console.error('❌ خطأ في جلب البيانات من Supabase:', error.message);
+            alert('خطأ في الاتصال بقاعدة البيانات: ' + error.message);
+            return;
+        }
 
-    if (error) {
-      console.error('❌ خطأ في جلب البيانات من Supabase:', error.message);
-      alert('خطأ في الاتصال بقاعدة البيانات: ' + error.message);
-      return;
+        const container = document.getElementById('products-list');
+        container.innerHTML = '';
+
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p>لا توجد منتجات حالياً.</p>';
+            return;
+        }
+
+        data.forEach((product) => {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.innerHTML = `
+                <h3>${product.name}</h3>
+                <p>${product.description || ''}</p>
+                <strong>${product.price} درهم</strong>
+            `;
+            container.appendChild(card);
+        });
+    } catch (err) {
+        console.error('❌ خطأ غير متوقع:', err);
     }
+}
 
-    console.log('✅ البيانات:', data);
-
-    const container = document.getElementById('products-list');
-    container.innerHTML = '';
-
-    if (!data || data.length === 0) {
-      container.innerHTML = '<p>لا توجد منتجات حالياً.</p>';
-      return;
-    }
-
-    data.forEach((product) => {
-      const card = document.createElement('div');
-      card.className = 'product-card';
-      card.innerHTML = `
-        <h3>${product.name}</h3>
-        <p>${product.description || ''}</p>
-        <strong>${product.price} درهم</strong>
-      `;
-      container.appendChild(card);
-    });
-  }
-
-  // --- ADMIN LOGIN / LOGOUT ---
-  window.handleAdminLogin = (event) => {
+// --- ADMIN LOGIN / LOGOUT ---
+window.handleAdminLogin = (event) => {
     event.preventDefault();
     const pin = document.getElementById('admin-pin').value;
     if (pin === ADMIN_PIN) {
-      adminLoggedIn = true;
-      showNotification(T('notif_admin_granted'));
-      renderPage('admin-panel');
+        adminLoggedIn = true;
+        showNotification(T('notif_admin_granted'));
+        renderPage('admin-panel');
     } else {
-      showNotification(T('notif_admin_invalid'), 'bg-red-500');
+        showNotification(T('notif_admin_invalid'), 'bg-red-500');
     }
-  };
+};
 
-  window.handleAdminLogout = () => {
+window.handleAdminLogout = () => {
     adminLoggedIn = false;
     showNotification(T('notif_admin_logout'), 'bg-gray-500');
     renderPage('home');
-  };
+};
 
-  // --- LANGUAGE / RTL CONTROL ---
-  window.switchLanguage = (lang) => {
+// --- LANGUAGE / RTL CONTROL ---
+window.switchLanguage = (lang) => {
     currentLanguage = lang;
     localStorage.setItem('mtshop_language', lang);
 
@@ -1587,45 +1582,32 @@ l<!DOCTYPE html>
     document.title = T('app_title');
 
     if (currentPage === 'admin-panel') {
-      renderAdminPanel();
+        renderAdminPanel();
     } else {
-      renderPage(currentPage);
+        renderPage(currentPage);
     }
-  };
+};
 
-  // تحميل المنتجات عند بدء الصفحة
-  loadProducts();
+// --- MISC UTILS ---
+window.copyUserId = () => {
+    const tempInput = document.createElement('textarea');
+    tempInput.value = userId;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand('copy');
+    document.body.removeChild(tempInput);
+    showNotification(T('notif_id_copied'), 'bg-gray-500');
+};
+
+window.scrollToProducts = () => {
+    const productsSection = document.getElementById('products');
+    if (productsSection) {
+        setTimeout(() => {
+            productsSection.scrollIntoView({ behavior: 'smooth' });
+        }, 10);
+    }
+};
+
+// تحميل المنتجات عند بدء الصفحة
+loadProducts();
 </script>
-
-<!-- استدعاء ملف الجافاسكربت الرئيسي -->
-<script type="module" src="./js/main.js"></script>
-
-        // --- MISC UTILS ---
-        window.copyUserId = () => {
-            const tempInput = document.createElement('textarea');
-            tempInput.value = userId;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempInput);
-            showNotification(T('notif_id_copied'), 'bg-gray-500');
-        };
-
-        window.scrollToProducts = () => {
-            const productsSection = document.getElementById('products');
-            if (productsSection) {
-                setTimeout(() => {
-                    productsSection.scrollIntoView({ behavior: 'smooth' });
-                }, 10);
-            }
-        };
-
-        // تحميل المنتجات عند بدء الصفحة
-        loadProducts();
-    </script>
-
-    <!-- استدعاء JS الرئيسي إذا كان لديك المزيد من الوظائف -->
-    <script type="module" src="./js/main.js"></script>
-
-</body>
-</html>
