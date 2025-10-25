@@ -1716,11 +1716,12 @@ window.scrollToProducts = () => {
     }
 };
 
-// تحميل المنتجات عند بدء الصفحة
-<script type="module" src="js/supabaseClient.js"></script>
 <script type="module">
     import { loadProducts } from './js/supabaseClient.js';
-    loadProducts();
-</script>
 
+    // تحميل المنتجات تلقائياً عند فتح الصفحة
+    window.addEventListener('DOMContentLoaded', () => {
+        loadProducts();
+    });
+</script>
 
