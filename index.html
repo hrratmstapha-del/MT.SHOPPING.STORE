@@ -1626,6 +1626,10 @@ window.scrollToProducts = () => {
 };
 
 // تحميل المنتجات عند بدء الصفحة
-loadProducts();
+<script type="module" src="js/supabaseClient.js"></script>
+<script type="module">
+    import { loadProducts } from './js/supabaseClient.js';
+    loadProducts();
 </script>
+
 
