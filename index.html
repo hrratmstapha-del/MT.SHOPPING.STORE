@@ -1503,7 +1503,7 @@ l<!DOCTYPE html>
         };
         
 
-    <!-- Admin inputs -->
+   <!-- Admin inputs -->
 <input type="password" id="admin-pin" placeholder="أدخل PIN">
 <button onclick="handleAdminLogin(event)">تسجيل الدخول</button>
 
@@ -1512,6 +1512,29 @@ l<!DOCTYPE html>
 
 <script type="module">
 import { supabase } from './js/supabaseClient.js';
+
+// --- CART FUNCTIONS ---
+const clearCart = async () => {
+    if (!isAuthReady || !db) return;
+    try {
+        const deletePromises = cartItems.map(item =>
+            deleteDoc(doc(db, `/artifacts/${appId}/users/${userId}/cart`, item.id))
+        );
+        await Promise.all(deletePromises);
+        showNotification(T('cart_cleared_success'));
+    } catch (e) {
+        console.error(T('cart_cleared_error'), e);
+        showNotification(T('cart_cleared_error') + e.message, 'bg-red-500');
+    }
+};
+
+window.showClearCartModal = () => {
+    if (cartItems.length === 0) {
+        showNotification(T('cart_empty'), 'bg-gray-500');
+        return;
+    }
+    showConfirmationModal('cart_clear_confirm_title', T('cart_clear_confirm_msg'), clearCart);
+};
 
 // --- تحميل المنتجات ---
 async function loadProducts() {
@@ -1605,3 +1628,4 @@ window.scrollToProducts = () => {
 // تحميل المنتجات عند بدء الصفحة
 loadProducts();
 </script>
+
