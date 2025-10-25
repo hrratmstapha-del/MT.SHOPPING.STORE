@@ -1501,18 +1501,25 @@ l<!DOCTYPE html>
                 showNotification(T('cart_cleared_error') + e.message, 'bg-red-500');
             }
         };
- <meta charset="UTF-8">
+        
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>متجر MTShop</title>
+    <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
 
-<!-- Admin inputs -->
-<input type="password" id="admin-pin" placeholder="أدخل PIN">
-<button onclick="handleAdminLogin(event)">تسجيل الدخول</button>
+    <!-- Admin inputs -->
+    <input type="password" id="admin-pin" placeholder="أدخل PIN">
+    <button onclick="handleAdminLogin(event)">تسجيل الدخول</button>
 
-<!-- مكان عرض المنتجات -->
-<div id="products-list"></div>
+    <!-- مكان عرض المنتجات -->
+    <div id="products-list"></div>
+
+    <!-- استدعاء JS الرئيسي -->
+    <script type="module" src="./js/main.js"></script>
+</body>
+</html>
 
 <!-- سكربت تحميل المنتجات والإدارة -->
 <script type="module">
